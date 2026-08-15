@@ -1,6 +1,7 @@
 package it.cityvoice.api.auth;
 
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,7 +34,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String username = null;
         String jwtToken = null;
 
-        // Estrae il token JWT dal header Authorization
+        // 1. Estrae il token JWT dal header Authorization
         if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
             jwtToken = requestTokenHeader.substring(7);
             try {
@@ -42,14 +43,34 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 System.out.println("Impossibile ottenere il token JWT");
             } catch (ExpiredJwtException e) {
                 System.out.println("Il token JWT è scaduto");
+            } catch (SignatureException e) {
+                System.out.println("JWT signature non valido: " + e.getMessage());
             }
-        } else {
-            // logger.warn("Il token JWT non inizia con Bearer");
+        }
+
+        // 2. Se Authorization header non trovato, cerca nel cookie "access_token"
+        if (jwtToken == null) {
+            jwtToken = JwtCookieUtils.extractTokenFromCookie(request);
+            if (jwtToken != null) {
+                try {
+                    username = jwtTokenUtil.getUsernameFromToken(jwtToken);
+                } catch (IllegalArgumentException e) {
+                    System.out.println("Impossibile ottenere il token dal cookie");
+                } catch (ExpiredJwtException e) {
+                    System.out.println("Il token nel cookie è scaduto");
+                } catch (SignatureException e) {
+                    System.out.println("JWT signature dal cookie non valido: " + e.getMessage());
+                }
+            }
+        }
+
+        // 3. Se comunque non trovato, passa oltre (utente anonimo)
+        if (jwtToken == null) {
             chain.doFilter(request, response);
             return;
         }
 
-        // Valida il token e configura l'autenticazione nel contesto di sicurezza
+        // 4. Valida il token e configura l'autenticazione nel contesto di sicurezza
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.customUserDetailsService.loadUserByUsername(username);
 
@@ -60,6 +81,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }
         }
+
         chain.doFilter(request, response);
     }
 }

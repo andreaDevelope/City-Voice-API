@@ -87,12 +87,6 @@ public class JwtTokenUtil {
                 .compact();
     }
 
-    // Estrae i ruoli dal token JWT
-    public List<String> getRolesFromToken(String token) {
-        Claims claims = getAllClaimsFromToken(token);
-        return claims.get("roles", List.class);
-    }
-
     // Valida il token JWT
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = getUsernameFromToken(token);

@@ -1,13 +1,12 @@
 package it.cityvoice.api.auth;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
 
@@ -18,6 +17,9 @@ public class AuthController {
 
     private final AppUserService appUserService;
 
+    private final JwtTokenUtil jwtTokenUtil;
+
+
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterRequest registerRequest) {
         appUserService.registerUser(
@@ -25,7 +27,8 @@ public class AuthController {
                 Set.of(Role.ROLE_USER) // Assegna il ruolo di default
 
         );
-        return ResponseEntity.ok("Registrazione avvenuta con successo");
+        return ResponseEntity.ok("Registrazione avvenuta con " +
+                "successo");
     }
 
     @PostMapping("/login")
@@ -34,17 +37,44 @@ public class AuthController {
                 loginRequest.getUsername(),
                 loginRequest.getPassword()
         );
-        ResponseCookie cookie = ResponseCookie.from("access_token", token)
-                .httpOnly(true)
-                .secure(false) // true quando useremo HTTPS
-                .path("/")
-                .maxAge(86400)
-                .sameSite("Lax")
-
-                .build();
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .build();
+                .header(HttpHeaders.SET_COOKIE, JwtCookieUtils.createAccessTokenCookie(token).toString())
+                .body(new AuthResponse(token));
     }
+
+    @GetMapping("/me")
+    public ResponseEntity<AuthUserResponse> getCurrentUser(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).build();
+        }
+
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        AppUser appUser = appUserService.loadUserByUsername(userDetails.getUsername());
+
+        return ResponseEntity.ok(new AuthUserResponse(
+                appUser.getUsername(),
+                appUser.getRoles()
+        ));
+    }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<AuthResponse> refreshToken(Authentication authentication, HttpServletRequest request) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).build();
+        }
+
+        String existingToken = JwtCookieUtils.extractTokenFromCookie(request);
+        if (existingToken == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        String newToken = jwtTokenUtil.generateToken(userDetails);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, JwtCookieUtils.createAccessTokenCookie(newToken).toString())
+                .body(new AuthResponse(newToken));
+    }
+
 }
