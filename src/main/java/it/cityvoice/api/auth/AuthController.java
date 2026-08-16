@@ -4,7 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,13 +44,10 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<AuthUserResponse> getCurrentUser(Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated()) {
+    public ResponseEntity<AuthUserResponse> getCurrentUser(@AuthenticationPrincipal AppUser appUser) {
+        if (appUser == null) {
             return ResponseEntity.status(401).build();
         }
-
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        AppUser appUser = appUserService.loadUserByUsername(userDetails.getUsername());
 
         return ResponseEntity.ok(new AuthUserResponse(
                 appUser.getUsername(),
@@ -59,8 +56,8 @@ public class AuthController {
     }
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<AuthResponse> refreshToken(Authentication authentication, HttpServletRequest request) {
-        if (authentication == null || !authentication.isAuthenticated()) {
+    public ResponseEntity<AuthResponse> refreshToken(@AuthenticationPrincipal AppUser appUser, HttpServletRequest request) {
+        if (appUser == null) {
             return ResponseEntity.status(401).build();
         }
 
@@ -69,8 +66,7 @@ public class AuthController {
             return ResponseEntity.status(401).build();
         }
 
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String newToken = jwtTokenUtil.generateToken(userDetails);
+        String newToken = jwtTokenUtil.generateToken((UserDetails) appUser);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, JwtCookieUtils.createAccessTokenCookie(newToken).toString())
