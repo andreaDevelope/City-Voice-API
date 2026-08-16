@@ -1,5 +1,6 @@
 package it.cityvoice.api.auth;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -44,11 +45,13 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<AuthUserResponse> getCurrentUser(@AuthenticationPrincipal AppUser appUser) {
-        if (appUser == null) {
+    public ResponseEntity<AuthUserResponse> getCurrentUser(@AuthenticationPrincipal UserDetails user) {
+
+        if (user == null) {
             return ResponseEntity.status(401).build();
         }
 
+        AppUser appUser = appUserService.findByUsername(user.getUsername()).orElseThrow(() -> new EntityNotFoundException("User not found"));
         return ResponseEntity.ok(new AuthUserResponse(
                 appUser.getUsername(),
                 appUser.getRoles()
@@ -56,8 +59,8 @@ public class AuthController {
     }
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<AuthResponse> refreshToken(@AuthenticationPrincipal AppUser appUser, HttpServletRequest request) {
-        if (appUser == null) {
+    public ResponseEntity<AuthResponse> refreshToken(@AuthenticationPrincipal UserDetails user, HttpServletRequest request) {
+        if (user == null) {
             return ResponseEntity.status(401).build();
         }
 
@@ -66,7 +69,7 @@ public class AuthController {
             return ResponseEntity.status(401).build();
         }
 
-        String newToken = jwtTokenUtil.generateToken((UserDetails) appUser);
+        String newToken = jwtTokenUtil.generateToken(user);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, JwtCookieUtils.createAccessTokenCookie(newToken).toString())

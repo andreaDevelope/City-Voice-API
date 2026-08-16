@@ -3,6 +3,7 @@ package it.cityvoice.api.auth;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -89,8 +90,16 @@ public class JwtTokenUtil {
 
     // Valida il token JWT
     public Boolean validateToken(String token, UserDetails userDetails) {
-        final String username = getUsernameFromToken(token);
-        return username.equals(userDetails.getUsername())
-                && !isTokenExpired(token);
+        try {
+            final String username = getUsernameFromToken(token);
+            boolean isValid = username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+            return isValid;
+        } catch (SignatureException e) {
+            System.err.println("[JwtTokenUtil] SignatureException: " + e.getMessage());
+            return false;
+        } catch (Exception e) {
+            System.err.println("[JwtTokenUtil] Exception in validateToken: " + e.getMessage());
+            return false;
+        }
     }
 }

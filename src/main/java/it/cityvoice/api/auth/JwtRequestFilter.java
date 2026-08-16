@@ -40,11 +40,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             try {
                 username = jwtTokenUtil.getUsernameFromToken(jwtToken);
             } catch (IllegalArgumentException e) {
-                System.out.println("Impossibile ottenere il token JWT");
             } catch (ExpiredJwtException e) {
-                System.out.println("Il token JWT è scaduto");
             } catch (SignatureException e) {
-                System.out.println("JWT signature non valido: " + e.getMessage());
             }
         }
 
@@ -55,11 +52,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 try {
                     username = jwtTokenUtil.getUsernameFromToken(jwtToken);
                 } catch (IllegalArgumentException e) {
-                    System.out.println("Impossibile ottenere il token dal cookie");
                 } catch (ExpiredJwtException e) {
-                    System.out.println("Il token nel cookie è scaduto");
                 } catch (SignatureException e) {
-                    System.out.println("JWT signature dal cookie non valido: " + e.getMessage());
                 }
             }
         }
