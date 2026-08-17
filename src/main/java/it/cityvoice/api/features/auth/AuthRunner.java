@@ -1,14 +1,17 @@
-package it.cityvoice.api.auth;
-
+package it.cityvoice.api.features.auth;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import it.cityvoice.api.features.auth.entity.AppUser;
+import it.cityvoice.api.features.auth.service.AppUserService;
+import it.cityvoice.api.features.auth.dto.RegisterRequest;
 
 import java.util.Optional;
 import java.util.Set;
+
 @Component
 public class AuthRunner implements ApplicationRunner {
 

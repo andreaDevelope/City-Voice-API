@@ -1,4 +1,4 @@
-package it.cityvoice.api.auth;
+package it.cityvoice.api.features.auth.service;
 
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
@@ -10,6 +10,11 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import it.cityvoice.api.features.auth.entity.AppUser;
+import it.cityvoice.api.features.auth.repository.AppUserRepository;
+import it.cityvoice.api.features.auth.Role;
+import it.cityvoice.api.features.auth.dto.RegisterRequest;
+import it.cityvoice.api.features.auth.util.JwtTokenUtil;
 
 import java.util.Optional;
 import java.util.Set;
@@ -62,8 +67,7 @@ public class AppUserService {
 
 
     public AppUser loadUserByUsername(String username)  {
-        AppUser appUser = appUserRepository.findByUsername(username)
+        return appUserRepository.findByUsername(username)
             .orElseThrow(() -> new EntityNotFoundException("Utente non trovato con username: " + username));
-        return appUser;
     }
 }

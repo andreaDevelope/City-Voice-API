@@ -1,4 +1,4 @@
-package it.cityvoice.api.auth;
+package it.cityvoice.api.features.auth.util;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;

@@ -1,4 +1,4 @@
-package it.cityvoice.api.auth;
+package it.cityvoice.api.features.auth.security;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;
@@ -13,6 +13,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import it.cityvoice.api.features.auth.util.JwtCookieUtils;
+import it.cityvoice.api.features.auth.util.JwtTokenUtil;
 
 import java.io.IOException;
 

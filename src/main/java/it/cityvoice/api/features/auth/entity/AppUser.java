@@ -1,8 +1,8 @@
-package it.cityvoice.api.auth;
-
+package it.cityvoice.api.features.auth.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import it.cityvoice.api.features.auth.Role;
 
 import java.util.Set;
 
@@ -24,7 +24,5 @@ public class AppUser {
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
     private Set<Role> roles;
-
-
 
 }

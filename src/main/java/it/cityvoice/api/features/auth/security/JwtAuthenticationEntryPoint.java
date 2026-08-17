@@ -1,4 +1,4 @@
-package it.cityvoice.api.auth;
+package it.cityvoice.api.features.auth.security;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
