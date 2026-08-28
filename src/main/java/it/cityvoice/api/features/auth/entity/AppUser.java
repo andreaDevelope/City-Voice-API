@@ -21,6 +21,9 @@ public class AppUser {
     @Column(nullable = false)
     private String password;
 
+    @Column(nullable = false)
+    private String recoveryKeyHash;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
     private Set<Role> roles;

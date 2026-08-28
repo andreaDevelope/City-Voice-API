@@ -15,6 +15,7 @@ import it.cityvoice.api.features.auth.util.JwtCookieUtils;
 import it.cityvoice.api.features.auth.Role;
 import it.cityvoice.api.features.auth.dto.LoginRequest;
 import it.cityvoice.api.features.auth.dto.RegisterRequest;
+import it.cityvoice.api.features.auth.dto.RecoveryRequest;
 import it.cityvoice.api.features.auth.dto.AuthResponse;
 import it.cityvoice.api.features.auth.dto.AuthUserResponse;
 
@@ -30,15 +31,21 @@ public class AuthController {
     private final JwtTokenUtil jwtTokenUtil;
 
 
+    public record RegisterResponse(String message, String recoveryKey) {}
+
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterRequest registerRequest) {
-        appUserService.registerUser(
+    public ResponseEntity<RegisterResponse> register(@RequestBody RegisterRequest registerRequest) {
+        AppUserService.RegistrationResult result = appUserService.registerUser(
                 registerRequest,
                 Set.of(Role.ROLE_USER) // Assegna il ruolo di default
-
         );
-        return ResponseEntity.ok("Registrazione avvenuta con " +
-                "successo");
+        return ResponseEntity.ok(new RegisterResponse("Registrazione avvenuta con successo", result.recoveryKey()));
+    }
+
+    @PostMapping("/recovery")
+    public ResponseEntity<String> recovery(@RequestBody RecoveryRequest request) {
+        appUserService.recoverAccount(request);
+        return ResponseEntity.ok("Password aggiornata con successo");
     }
 
     @PostMapping("/login")
