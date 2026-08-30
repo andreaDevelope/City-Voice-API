@@ -19,6 +19,7 @@ import it.cityvoice.api.features.auth.dto.RecoveryRequest;
 import it.cityvoice.api.features.auth.dto.AuthResponse;
 import it.cityvoice.api.features.auth.dto.AuthUserResponse;
 
+import java.util.Map;
 import java.util.Set;
 
 @RestController
@@ -43,9 +44,9 @@ public class AuthController {
     }
 
     @PostMapping("/recovery")
-    public ResponseEntity<String> recovery(@RequestBody RecoveryRequest request) {
+    public ResponseEntity<Map<String, String>> recovery(@RequestBody RecoveryRequest request) {
         appUserService.recoverAccount(request);
-        return ResponseEntity.ok("Password aggiornata con successo");
+        return ResponseEntity.ok(Map.of("message", "Password aggiornata con successo"));
     }
 
     @PostMapping("/login")
