@@ -13,7 +13,7 @@ Questo repository contiene l'API. Il frontend vive in un repository separato.
 
     ./mvnw spring-boot:run
 
-Requires Java 21, Docker, and the `JWT-SECRET`, `DB_PASSWORD` and `POSTGRES_PASSWORD` environment variables. See [local setup](docs/dev/01-local-setup.md) for details.
+Requires Java 21, Docker, and the `JWT_SECRET`, `DB_PASSWORD` and `POSTGRES_PASSWORD` environment variables. See [local setup](docs/dev/01-local-setup.md) for details.
 
 ## Stato del progetto
 
