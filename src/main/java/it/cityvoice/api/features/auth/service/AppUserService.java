@@ -1,9 +1,11 @@
 package it.cityvoice.api.features.auth.service;
 
-import jakarta.persistence.EntityExistsException;
-import jakarta.persistence.EntityNotFoundException;
+import it.cityvoice.api.shared.exceptions.BadRequestException;
+import it.cityvoice.api.shared.exceptions.ConflictException;
+import it.cityvoice.api.shared.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -45,7 +47,7 @@ public class AppUserService {
 
     public RegistrationResult registerUser(RegisterRequest registerRequest, Set<Role> roles) {
         if (appUserRepository.existsByUsername(registerRequest.getUsername())) {
-            throw new EntityExistsException("Username già in uso");
+            throw new ConflictException("Username già in uso");
         }
 
         RecoveryKeyService.GeneratedKey generatedKey = recoveryKeyService.generate();
@@ -73,26 +75,27 @@ public class AppUserService {
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             return jwtTokenUtil.generateToken(userDetails);
         } catch (AuthenticationException e) {
-            throw new SecurityException("Credenziali non valide", e);
+            throw new BadCredentialsException("Username o password non validi", e);
         }
     }
 
 
     public AppUser loadUserByUsername(String username)  {
         return appUserRepository.findByUsername(username)
-            .orElseThrow(() -> new EntityNotFoundException("Utente non trovato con username: " + username));
+            .orElseThrow(() -> new ResourceNotFoundException("Utente non trovato con username: " + username));
     }
 
     public void recoverAccount(RecoveryRequest request) {
         if (recoveryAttemptLimiter.isLocked(request.getUsername())) {
-            throw new IllegalStateException("Troppi tentativi falliti, riprova più tardi");
+            throw new BadRequestException("Troppi tentativi falliti, riprova più tardi");
         }
+
         AppUser user = appUserRepository.findByUsername(request.getUsername())
-            .orElseThrow(() -> new EntityNotFoundException("Utente non trovato"));
+                .orElseThrow(() -> new BadRequestException("Username o chiave di recovery non validi"));
 
         if (!recoveryKeyService.matches(request.getRecoveryKey(), user.getRecoveryKeyHash())) {
             recoveryAttemptLimiter.recordFailure(request.getUsername());
-            throw new IllegalArgumentException("Chiave di recovery non valida");
+            throw new BadRequestException("Username o chiave di recovery non validi");
         }
 
         recoveryAttemptLimiter.recordSuccess(request.getUsername());

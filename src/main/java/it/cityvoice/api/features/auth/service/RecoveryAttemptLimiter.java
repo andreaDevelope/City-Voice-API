@@ -1,10 +1,11 @@
 package it.cityvoice.api.features.auth.service;
 
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+
 import java.time.Instant;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Component
+@Service
 public class RecoveryAttemptLimiter {
     private static final int MAX_ATTEMPTS = 5;
     private static final long LOCKOUT_SECONDS = 300; // 5 minuti
