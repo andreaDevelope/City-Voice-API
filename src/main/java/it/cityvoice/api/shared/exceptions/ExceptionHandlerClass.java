@@ -6,6 +6,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -68,12 +70,20 @@ public class ExceptionHandlerClass {
                 .body(Map.of("message", ex.getMessage()));
     }
 
+    // 401 - username o password sbagliati
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<Map<String, String>> handleBadCredentials(BadCredentialsException ex) {
+        log.warn("Credenziali non valide", ex);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("message", "Username o password non validi"));
+    }
+
     // 403
-    @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<Map<String, String>> handleForbidden(UnauthorizedException ex) {
+    @ExceptionHandler({AccessDeniedException.class, UnauthorizedException.class})
+    public ResponseEntity<Map<String, String>> handleForbidden(Exception ex) {
         log.warn("Accesso negato", ex);
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(Map.of("message", ex.getMessage()));
+                .body(Map.of("message", "Non hai i permessi per questa operazione"));
     }
 
     // 404
