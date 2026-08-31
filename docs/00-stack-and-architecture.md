@@ -54,10 +54,49 @@ Registration generates a recovery key: six words drawn with `SecureRandom` from 
 
 The plaintext key is returned once in the registration response and never stored. Only its BCrypt hash is persisted in `users.recovery_key_hash`.
 
-`POST /api/auth/recovery` verifies the key with `PasswordEncoder.matches` and resets the password. Keys do not expire and remain valid after use.
+`POST /api/auth/recovery` verifies the key with `PasswordEncoder.matches` and resets the password.
 
 `RecoveryAttemptLimiter` blocks an account for 5 minutes after 5 failed attempts. It is in-memory: counters reset on restart and are not shared across instances.
 
 ## Schema
 
 `spring.jpa.hibernate.ddl-auto=create` — Hibernate generates the schema from the entities at every startup. There are no migration files.
+
+## Error handling
+
+Controllers contain no try/catch. Services throw, and `ExceptionHandlerClass`
+(a `@RestControllerAdvice` in `it.cityvoice.api.shared.exceptions`) maps
+exceptions to HTTP status codes.
+
+Custom exceptions carry their message to the client: those strings are written
+in the service layer and are safe by construction. The catch-all handler returns
+a fixed string instead, because `ex.getMessage()` on an unexpected exception
+tends to leak column names, constraint names and framework internals. Stack
+traces always go to the log.
+
+Two mappings are worth explaining.
+
+`BadCredentialsException` returns 401 with the same message whether the username
+does not exist or the password is wrong. Distinguishing the two would tell an
+attacker which usernames are registered.
+
+`/recovery` follows the same rule, but the protection is partial: registration
+returns 409 when a username is taken, which reveals the same information. The
+real defence against enumeration here is `RecoveryAttemptLimiter`, not the
+error message.
+
+Exceptions thrown inside the Spring Security filter chain never reach the
+advice, because they happen before the controller is invoked. A missing or
+expired token is handled by `JwtAuthenticationEntryPoint` instead.
+
+| Exception | Status |
+|---|---|
+| `MethodArgumentNotValidException`, `ConstraintViolationException` | 400, body maps field to message |
+| `BadRequestException`, `IllegalArgumentException`, `DataIntegrityViolationException` | 400 |
+| `BadCredentialsException` | 401 |
+| `AccessDeniedException`, `UnauthorizedException` | 403 |
+| `ResourceNotFoundException` | 404 |
+| `ConflictException` | 409 |
+| everything else | 500 |
+
+Response bodies are always JSON: `{"message": "..."}`.
