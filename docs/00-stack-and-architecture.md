@@ -91,7 +91,7 @@ expired token is handled by `JwtAuthenticationEntryPoint` instead.
 
 | Exception | Status |
 |---|---|
-| `MethodArgumentNotValidException`, `ConstraintViolationException` | 400, body maps field to message |
+| `ConstraintViolationException` | 400, body maps field to message |
 | `BadRequestException`, `IllegalArgumentException`, `DataIntegrityViolationException` | 400 |
 | `BadCredentialsException` | 401 |
 | `AccessDeniedException`, `UnauthorizedException` | 403 |
@@ -100,3 +100,15 @@ expired token is handled by `JwtAuthenticationEntryPoint` instead.
 | everything else | 500 |
 
 Response bodies are always JSON: `{"message": "..."}`.
+
+## Request validation
+
+Validation runs in the service layer, not the controller. Controllers are
+pass-through: `@RequestBody` in, call the service, nothing else.
+
+DTOs carry `@NotBlank`/`@Size` constraints (username 3–14 chars, password 6–12
+chars). Services are annotated `@Validated` and take `@Valid` parameters, which
+makes Spring trigger validation on the method call and throw
+`ConstraintViolationException` on failure — the same exception already used
+for path/query parameter validation, so one handler in `ExceptionHandlerClass`
+covers both cases.

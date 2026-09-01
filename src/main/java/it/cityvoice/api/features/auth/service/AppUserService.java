@@ -1,8 +1,10 @@
 package it.cityvoice.api.features.auth.service;
 
+import it.cityvoice.api.features.auth.dto.LoginRequest;
 import it.cityvoice.api.shared.exceptions.BadRequestException;
 import it.cityvoice.api.shared.exceptions.ConflictException;
 import it.cityvoice.api.shared.exceptions.ResourceNotFoundException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -18,11 +20,13 @@ import it.cityvoice.api.features.auth.Role;
 import it.cityvoice.api.features.auth.dto.RegisterRequest;
 import it.cityvoice.api.features.auth.dto.RecoveryRequest;
 import it.cityvoice.api.features.auth.util.JwtTokenUtil;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.Optional;
 import java.util.Set;
 
 @Service
+@Validated
 public class AppUserService {
 
     @Autowired
@@ -45,7 +49,7 @@ public class AppUserService {
 
     public record RegistrationResult(AppUser user, String recoveryKey) {}
 
-    public RegistrationResult registerUser(RegisterRequest registerRequest, Set<Role> roles) {
+    public RegistrationResult registerUser(@Valid RegisterRequest registerRequest, Set<Role> roles) {
         if (appUserRepository.existsByUsername(registerRequest.getUsername())) {
             throw new ConflictException("Username già in uso");
         }
@@ -66,10 +70,10 @@ public class AppUserService {
         return appUserRepository.findByUsername(username);
     }
 
-    public String authenticateUser(String username, String password)  {
+    public String authenticateUser(@Valid LoginRequest loginRequest)  {
         try {
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(username, password)
+                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
             );
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
@@ -85,7 +89,7 @@ public class AppUserService {
             .orElseThrow(() -> new ResourceNotFoundException("Utente non trovato con username: " + username));
     }
 
-    public void recoverAccount(RecoveryRequest request) {
+    public void recoverAccount(@Valid RecoveryRequest request) {
         if (recoveryAttemptLimiter.isLocked(request.getUsername())) {
             throw new BadRequestException("Troppi tentativi falliti, riprova più tardi");
         }
