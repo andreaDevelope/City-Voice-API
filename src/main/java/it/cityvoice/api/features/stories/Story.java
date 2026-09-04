@@ -1,6 +1,6 @@
 package it.cityvoice.api.features.stories;
 
-import it.cityvoice.api.features.profile.user_rome.UserRome;
+import it.cityvoice.api.features.profile.user_rome.entity.UserRome;
 import it.cityvoice.api.features.stories.enums.StoryStatus;
 import jakarta.persistence.*;
 import lombok.Data;

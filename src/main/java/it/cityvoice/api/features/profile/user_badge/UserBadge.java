@@ -1,7 +1,7 @@
 package it.cityvoice.api.features.profile.user_badge;
 
 import it.cityvoice.api.features.profile.badge.Badge;
-import it.cityvoice.api.features.profile.user_rome.UserRome;
+import it.cityvoice.api.features.profile.user_rome.entity.UserRome;
 import jakarta.persistence.*;
 import lombok.Data;
 

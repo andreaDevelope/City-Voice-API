@@ -1,6 +1,10 @@
 package it.cityvoice.api.features.auth.service;
 
 import it.cityvoice.api.features.auth.dto.LoginRequest;
+import it.cityvoice.api.features.profile.enums.ProfileColor;
+import it.cityvoice.api.features.profile.enums.ProfileSymbol;
+import it.cityvoice.api.features.profile.user_rome.entity.UserRome;
+import it.cityvoice.api.features.profile.user_rome.services.UserRomeServ;
 import it.cityvoice.api.shared.exceptions.BadRequestException;
 import it.cityvoice.api.shared.exceptions.ConflictException;
 import it.cityvoice.api.shared.exceptions.ResourceNotFoundException;
@@ -47,6 +51,9 @@ public class AppUserService {
     @Autowired
     private RecoveryAttemptLimiter recoveryAttemptLimiter;
 
+    @Autowired
+    private UserRomeServ userRomeServ;
+
     public record RegistrationResult(AppUser user, String recoveryKey) {}
 
     public RegistrationResult registerUser(@Valid RegisterRequest registerRequest, Set<Role> roles) {
@@ -63,6 +70,13 @@ public class AppUserService {
         appUser.setRecoveryKeyHash(generatedKey.hashedKey());
 
         AppUser savedUser = appUserRepository.save(appUser);
+
+        UserRome userRome = new UserRome();
+        userRome.setAppUser(savedUser);
+        userRome.setSymbol(ProfileSymbol.GENERIC);
+        userRome.setColor(ProfileColor.NEUTRAL);
+        userRomeServ.save(userRome);
+        userRomeServ.save(userRome);
         return new RegistrationResult(savedUser, generatedKey.plainKey());
     }
 
@@ -75,7 +89,6 @@ public class AppUserService {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
             );
-
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             return jwtTokenUtil.generateToken(userDetails);
         } catch (AuthenticationException e) {

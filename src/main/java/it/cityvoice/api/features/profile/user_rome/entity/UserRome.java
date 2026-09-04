@@ -1,6 +1,8 @@
-package it.cityvoice.api.features.profile.user_rome;
+package it.cityvoice.api.features.profile.user_rome.entity;
 
 import it.cityvoice.api.features.auth.entity.AppUser;
+import it.cityvoice.api.features.profile.enums.ProfileColor;
+import it.cityvoice.api.features.profile.enums.ProfileSymbol;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -10,16 +12,18 @@ import lombok.Data;
     @Data
     public class UserRome {
         @Id
-        @GeneratedValue(strategy = GenerationType.UUID)
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
         private Long id;
 
         @OneToOne
         @JoinColumn(name = "app_user_id", nullable = false, unique = true)
         private AppUser appUser;
 
-        private String symbol;
+        @Enumerated(EnumType.STRING)
+        private ProfileSymbol symbol;
 
-        private String color;
+        @Enumerated(EnumType.STRING)
+        private ProfileColor color;
 
         private String neighborhood;
 
