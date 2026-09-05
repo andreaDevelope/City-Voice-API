@@ -1,4 +1,4 @@
-package it.cityvoice.api.features.auth.service;
+package it.cityvoice.api.features.auth.services;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

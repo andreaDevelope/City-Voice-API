@@ -1,4 +1,4 @@
-package it.cityvoice.api.features.auth;
+package it.cityvoice.api.features.auth.enums;
 
 public enum Role {
     ROLE_USER,

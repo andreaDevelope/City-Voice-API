@@ -8,7 +8,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import it.cityvoice.api.features.auth.entity.AppUser;
-import it.cityvoice.api.features.auth.repository.AppUserRepository;
+import it.cityvoice.api.features.auth.repositories.AppUserRepository;
 
 import java.util.stream.Collectors;
 

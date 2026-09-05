@@ -1,12 +1,13 @@
-package it.cityvoice.api.features.auth;
+package it.cityvoice.api.features.auth.runners;
 
+import it.cityvoice.api.features.auth.enums.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import it.cityvoice.api.features.auth.entity.AppUser;
-import it.cityvoice.api.features.auth.service.AppUserService;
+import it.cityvoice.api.features.auth.services.AppUserService;
 import it.cityvoice.api.features.auth.dto.RegisterRequest;
 
 import java.util.Optional;

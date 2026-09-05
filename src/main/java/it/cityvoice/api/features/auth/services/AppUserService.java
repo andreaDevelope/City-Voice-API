@@ -1,4 +1,4 @@
-package it.cityvoice.api.features.auth.service;
+package it.cityvoice.api.features.auth.services;
 
 import it.cityvoice.api.features.auth.dto.LoginRequest;
 import it.cityvoice.api.features.profile.enums.ProfileColor;
@@ -19,8 +19,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import it.cityvoice.api.features.auth.entity.AppUser;
-import it.cityvoice.api.features.auth.repository.AppUserRepository;
-import it.cityvoice.api.features.auth.Role;
+import it.cityvoice.api.features.auth.repositories.AppUserRepository;
+import it.cityvoice.api.features.auth.enums.Role;
 import it.cityvoice.api.features.auth.dto.RegisterRequest;
 import it.cityvoice.api.features.auth.dto.RecoveryRequest;
 import it.cityvoice.api.features.auth.util.JwtTokenUtil;

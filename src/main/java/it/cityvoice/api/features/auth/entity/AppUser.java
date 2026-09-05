@@ -2,7 +2,7 @@ package it.cityvoice.api.features.auth.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import it.cityvoice.api.features.auth.Role;
+import it.cityvoice.api.features.auth.enums.Role;
 
 import java.util.Set;
 

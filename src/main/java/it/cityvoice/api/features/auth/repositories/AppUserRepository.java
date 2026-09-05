@@ -1,4 +1,4 @@
-package it.cityvoice.api.features.auth.repository;
+package it.cityvoice.api.features.auth.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import it.cityvoice.api.features.auth.entity.AppUser;

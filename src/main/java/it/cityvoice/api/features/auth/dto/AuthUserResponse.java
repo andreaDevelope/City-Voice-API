@@ -1,6 +1,6 @@
 package it.cityvoice.api.features.auth.dto;
 
-import it.cityvoice.api.features.auth.Role;
+import it.cityvoice.api.features.auth.enums.Role;
 
 import java.util.Set;
 

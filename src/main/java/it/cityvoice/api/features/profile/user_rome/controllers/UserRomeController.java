@@ -1,7 +1,7 @@
 package it.cityvoice.api.features.profile.user_rome.controllers;
 
 import it.cityvoice.api.features.auth.entity.AppUser;
-import it.cityvoice.api.features.auth.service.AppUserService;
+import it.cityvoice.api.features.auth.services.AppUserService;
 import it.cityvoice.api.features.profile.user_rome.dto.UpdateVisualIdentityRequest;
 import it.cityvoice.api.features.profile.user_rome.dto.UserProfileResponse;
 import it.cityvoice.api.features.profile.user_rome.dto.VisualIdentityResponse;

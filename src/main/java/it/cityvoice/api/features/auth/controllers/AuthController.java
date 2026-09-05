@@ -1,4 +1,4 @@
-package it.cityvoice.api.features.auth.controller;
+package it.cityvoice.api.features.auth.controllers;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,10 +9,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import it.cityvoice.api.features.auth.entity.AppUser;
-import it.cityvoice.api.features.auth.service.AppUserService;
+import it.cityvoice.api.features.auth.services.AppUserService;
 import it.cityvoice.api.features.auth.util.JwtTokenUtil;
 import it.cityvoice.api.features.auth.util.JwtCookieUtils;
-import it.cityvoice.api.features.auth.Role;
+import it.cityvoice.api.features.auth.enums.Role;
 import it.cityvoice.api.features.auth.dto.LoginRequest;
 import it.cityvoice.api.features.auth.dto.RegisterRequest;
 import it.cityvoice.api.features.auth.dto.RecoveryRequest;
