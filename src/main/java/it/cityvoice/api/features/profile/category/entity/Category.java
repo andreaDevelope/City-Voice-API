@@ -1,4 +1,4 @@
-package it.cityvoice.api.features.profile.category;
+package it.cityvoice.api.features.profile.category.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
