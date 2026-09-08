@@ -1,8 +1,13 @@
 package it.cityvoice.api.features.auth.services;
 
 import it.cityvoice.api.features.auth.dto.LoginRequest;
-import it.cityvoice.api.features.profile.enums.ProfileColor;
-import it.cityvoice.api.features.profile.enums.ProfileSymbol;
+import it.cityvoice.api.features.profile.badge.entity.Badge;
+import it.cityvoice.api.features.profile.badge.services.BadgeServ;
+import it.cityvoice.api.features.profile.category.entity.Category;
+import it.cityvoice.api.features.profile.category.services.CategoryServ;
+import it.cityvoice.api.features.profile.user_rome.enums.ProfileColor;
+import it.cityvoice.api.features.profile.user_rome.enums.ProfileSymbol;
+import it.cityvoice.api.features.profile.user_badge.services.UserBadgeService;
 import it.cityvoice.api.features.profile.user_rome.entity.UserRome;
 import it.cityvoice.api.features.profile.user_rome.services.UserRomeServ;
 import it.cityvoice.api.shared.exceptions.BadRequestException;
@@ -54,6 +59,15 @@ public class AppUserService {
     @Autowired
     private UserRomeServ userRomeServ;
 
+    @Autowired
+    private UserBadgeService userBadgeServ;
+
+    @Autowired
+    private BadgeServ badgeServ;
+
+    @Autowired
+    private CategoryServ categoryServ;
+
     public record RegistrationResult(AppUser user, String recoveryKey) {}
 
     public RegistrationResult registerUser(@Valid RegisterRequest registerRequest, Set<Role> roles) {
@@ -76,7 +90,10 @@ public class AppUserService {
         userRome.setSymbol(ProfileSymbol.GENERIC);
         userRome.setColor(ProfileColor.NEUTRAL);
         userRomeServ.save(userRome);
-        userRomeServ.save(userRome);
+
+        Category activityCategory = categoryServ.getCategoryByName("activity");
+        Badge moChiSeiBadge = badgeServ.getFirstBadgeForCategoryByName(activityCategory.getName());
+        userBadgeServ.unlock(userRome, moChiSeiBadge);
         return new RegistrationResult(savedUser, generatedKey.plainKey());
     }
 

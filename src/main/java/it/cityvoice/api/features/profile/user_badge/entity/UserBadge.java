@@ -1,4 +1,4 @@
-package it.cityvoice.api.features.profile.user_badge;
+package it.cityvoice.api.features.profile.user_badge.entity;
 
 import it.cityvoice.api.features.profile.badge.entity.Badge;
 import it.cityvoice.api.features.profile.user_rome.entity.UserRome;

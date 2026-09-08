@@ -1,4 +1,4 @@
-package it.cityvoice.api.features.profile.enums;
+package it.cityvoice.api.features.profile.user_rome.enums;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 

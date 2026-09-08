@@ -20,6 +20,23 @@ public class BadgeServ {
     private final BadgeRepo badgeRepo;
     private final CategoryRepo categoryRepo;
 
+
+    public List<Badge> getAllBadgesForCategory(Long categoryId) {
+        return badgeRepo.findByCategoryIdOrderBySequenceOrderAsc(categoryId);
+    }
+
+    public Badge getFirstBadgeForCategoryById(Long categoryId) {
+        return badgeRepo.findFirstByCategoryIdOrderBySequenceOrderAsc(categoryId);
+    }
+
+    public Badge getFirstBadgeForCategoryByName(String categoryName) {
+        return badgeRepo.findFirstByCategoryNameOrderBySequenceOrderAsc(categoryName);
+    }
+
+    public Badge getBadgeByName(String badgeName) {
+        return badgeRepo.findByName(badgeName);
+    }
+
     public CategoryProgressResponse getProgressForCategory(String categoryName, int counter) {
         Category category = categoryRepo.findByName(categoryName)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoria non trovata: " + categoryName));

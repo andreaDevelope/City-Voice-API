@@ -16,13 +16,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/profile")
+@RequestMapping("/api/cityvoice/profile")
+@PreAuthorize("isAuthenticated()")
 @RequiredArgsConstructor
 public class UserRomeController {
     private final UserRomeServ userRomeServ;
     private final AppUserService appUserService;
 
-    @PreAuthorize("hasRole('USER')")
     @GetMapping("/me")
     public ResponseEntity<UserProfileResponse> getMyProfile(@AuthenticationPrincipal UserDetails user) {
                 AppUser appUser = appUserService.findByUsername(user.getUsername())
@@ -37,7 +37,6 @@ public class UserRomeController {
                 return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasRole('USER')")
     @PutMapping("/visual-identity")
     public ResponseEntity<VisualIdentityResponse> updateVisualIdentity(
             @AuthenticationPrincipal UserDetails user,

@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/cityvoice/auth")
 @RequiredArgsConstructor
 public class AuthController {
 

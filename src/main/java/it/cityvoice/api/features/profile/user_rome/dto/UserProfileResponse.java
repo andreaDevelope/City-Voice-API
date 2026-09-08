@@ -1,7 +1,7 @@
 package it.cityvoice.api.features.profile.user_rome.dto;
 
-import it.cityvoice.api.features.profile.enums.ProfileColor;
-import it.cityvoice.api.features.profile.enums.ProfileSymbol;
+import it.cityvoice.api.features.profile.user_rome.enums.ProfileColor;
+import it.cityvoice.api.features.profile.user_rome.enums.ProfileSymbol;
 
 public record UserProfileResponse(
         String username,

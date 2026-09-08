@@ -8,4 +8,10 @@ import java.util.List;
 public interface BadgeRepo extends JpaRepository<Badge, Long> {
 
     List<Badge> findByCategoryIdOrderBySequenceOrderAsc(Long categoryId);
+
+    Badge findFirstByCategoryIdOrderBySequenceOrderAsc(Long categoryId);
+
+    Badge findFirstByCategoryNameOrderBySequenceOrderAsc(String categoryName);
+
+    Badge findByName(String name);
 }
