@@ -6,8 +6,10 @@ import it.cityvoice.api.features.profile.user_rome.enums.ProfileSymbol;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDate;
 
-    @Entity
+
+@Entity
     @Table(name = "users_rome")
     @Data
     public class UserRome {
@@ -38,6 +40,8 @@ import lombok.Data;
 
         @Column(nullable = false)
         private int impactCounter = 0;
+
+        private LocalDate lastActiveDate;
     }
 
 

@@ -1,4 +1,4 @@
-package it.cityvoice.api.features.stories;
+package it.cityvoice.api.features.stories.entity;
 
 import it.cityvoice.api.features.profile.user_rome.entity.UserRome;
 import it.cityvoice.api.features.stories.enums.StoryStatus;
@@ -38,7 +38,7 @@ public class Story {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private StoryStatus status = StoryStatus.IN_REVIEW;
+    private StoryStatus status = StoryStatus.PUBLISHED;
 
     @Column(nullable = false)
     private Instant createdAt = Instant.now();

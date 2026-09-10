@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -79,6 +80,19 @@ public class ExceptionHandlerClass {
         log.warn("Risorsa non trovata", ex);
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Map.of("message", ex.getMessage()));
+    }
+
+    // 400 - validazione su @RequestBody con @Valid
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleBodyValidation(MethodArgumentNotValidException ex) {
+        log.warn("Validazione body fallita", ex);
+        Map<String, String> errors = ex.getBindingResult().getFieldErrors().stream()
+                .collect(Collectors.toMap(
+                        org.springframework.validation.FieldError::getField,
+                        fe -> fe.getDefaultMessage() != null ? fe.getDefaultMessage() : "Valore non valido",
+                        (existing, replacement) -> existing
+                ));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
 
     // 500 - messaggio fisso, il dettaglio resta nel log
