@@ -1,6 +1,6 @@
-package it.cityvoice.api.features.profile.category.repositories;
+package it.cityvoice.api.features.profile.categories.repositories;
 
-import it.cityvoice.api.features.profile.category.entity.Category;
+import it.cityvoice.api.features.profile.categories.entity.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

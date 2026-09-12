@@ -1,6 +1,6 @@
 package it.cityvoice.api.features.profile.user_badge.services;
 
-import it.cityvoice.api.features.profile.badge.entity.Badge;
+import it.cityvoice.api.features.profile.badges.entity.Badge;
 import it.cityvoice.api.features.profile.user_badge.entity.UserBadge;
 import it.cityvoice.api.features.profile.user_badge.repositories.UserBadgeRepo;
 import it.cityvoice.api.features.profile.user_rome.entity.UserRome;

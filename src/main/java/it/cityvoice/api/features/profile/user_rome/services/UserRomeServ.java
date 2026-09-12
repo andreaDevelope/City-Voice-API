@@ -1,9 +1,9 @@
 package it.cityvoice.api.features.profile.user_rome.services;
 
-import it.cityvoice.api.features.profile.badge.entity.Badge;
-import it.cityvoice.api.features.profile.badge.services.BadgeServ;
-import it.cityvoice.api.features.profile.category.entity.Category;
-import it.cityvoice.api.features.profile.category.services.CategoryServ;
+import it.cityvoice.api.features.profile.badges.entity.Badge;
+import it.cityvoice.api.features.profile.badges.services.BadgeServ;
+import it.cityvoice.api.features.profile.categories.entity.Category;
+import it.cityvoice.api.features.profile.categories.services.CategoryServ;
 import it.cityvoice.api.features.profile.user_badge.repositories.UserBadgeRepo;
 import it.cityvoice.api.features.profile.user_badge.services.UserBadgeService;
 import it.cityvoice.api.features.profile.user_rome.dto.UpdateVisualIdentityRequest;

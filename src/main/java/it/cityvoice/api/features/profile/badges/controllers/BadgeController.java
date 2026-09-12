@@ -1,10 +1,10 @@
-package it.cityvoice.api.features.profile.badge.controllers;
+package it.cityvoice.api.features.profile.badges.controllers;
 
 import it.cityvoice.api.features.auth.entity.AppUser;
 import it.cityvoice.api.features.auth.services.AppUserService;
-import it.cityvoice.api.features.profile.badge.dto.CategoryProgressResponse;
-import it.cityvoice.api.features.profile.badge.services.BadgeServ;
-import it.cityvoice.api.features.profile.category.services.CategoryServ;
+import it.cityvoice.api.features.profile.badges.dto.CategoryProgressResponse;
+import it.cityvoice.api.features.profile.badges.services.BadgeServ;
+import it.cityvoice.api.features.profile.categories.services.CategoryServ;
 import it.cityvoice.api.features.profile.user_rome.entity.UserRome;
 import it.cityvoice.api.features.profile.user_rome.services.UserRomeServ;
 import it.cityvoice.api.shared.exceptions.ResourceNotFoundException;

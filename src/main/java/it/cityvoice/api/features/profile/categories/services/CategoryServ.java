@@ -1,7 +1,7 @@
-package it.cityvoice.api.features.profile.category.services;
+package it.cityvoice.api.features.profile.categories.services;
 
-import it.cityvoice.api.features.profile.category.entity.Category;
-import it.cityvoice.api.features.profile.category.repositories.CategoryRepo;
+import it.cityvoice.api.features.profile.categories.entity.Category;
+import it.cityvoice.api.features.profile.categories.repositories.CategoryRepo;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

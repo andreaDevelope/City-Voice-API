@@ -1,4 +1,4 @@
-package it.cityvoice.api.features.profile.badge.dto;
+package it.cityvoice.api.features.profile.badges.dto;
 
 public record BadgeDto(
         Long id,

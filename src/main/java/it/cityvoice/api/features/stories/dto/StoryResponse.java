@@ -1,6 +1,6 @@
 package it.cityvoice.api.features.stories.dto;
 
-import it.cityvoice.api.features.profile.badge.dto.CategoryProgressResponse;
+import it.cityvoice.api.features.profile.badges.dto.CategoryProgressResponse;
 import it.cityvoice.api.features.stories.entity.Story;
 import it.cityvoice.api.features.stories.enums.StoryStatus;
 

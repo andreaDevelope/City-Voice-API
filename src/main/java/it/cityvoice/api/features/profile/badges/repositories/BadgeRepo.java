@@ -1,6 +1,6 @@
-package it.cityvoice.api.features.profile.badge.repositories;
+package it.cityvoice.api.features.profile.badges.repositories;
 
-import it.cityvoice.api.features.profile.badge.entity.Badge;
+import it.cityvoice.api.features.profile.badges.entity.Badge;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

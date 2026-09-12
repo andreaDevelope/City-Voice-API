@@ -1,11 +1,11 @@
-package it.cityvoice.api.features.profile.badge.services;
+package it.cityvoice.api.features.profile.badges.services;
 
-import it.cityvoice.api.features.profile.badge.dto.BadgeDto;
-import it.cityvoice.api.features.profile.badge.dto.CategoryProgressResponse;
-import it.cityvoice.api.features.profile.badge.entity.Badge;
-import it.cityvoice.api.features.profile.badge.repositories.BadgeRepo;
-import it.cityvoice.api.features.profile.category.entity.Category;
-import it.cityvoice.api.features.profile.category.repositories.CategoryRepo;
+import it.cityvoice.api.features.profile.badges.dto.BadgeDto;
+import it.cityvoice.api.features.profile.badges.dto.CategoryProgressResponse;
+import it.cityvoice.api.features.profile.badges.entity.Badge;
+import it.cityvoice.api.features.profile.badges.repositories.BadgeRepo;
+import it.cityvoice.api.features.profile.categories.entity.Category;
+import it.cityvoice.api.features.profile.categories.repositories.CategoryRepo;
 import it.cityvoice.api.features.profile.user_rome.entity.UserRome;
 import it.cityvoice.api.shared.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;

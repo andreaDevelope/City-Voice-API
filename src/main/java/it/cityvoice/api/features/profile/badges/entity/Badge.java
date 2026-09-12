@@ -1,6 +1,6 @@
-package it.cityvoice.api.features.profile.badge.entity;
+package it.cityvoice.api.features.profile.badges.entity;
 
-import it.cityvoice.api.features.profile.category.entity.Category;
+import it.cityvoice.api.features.profile.categories.entity.Category;
 import jakarta.persistence.*;
 import lombok.Data;
 
