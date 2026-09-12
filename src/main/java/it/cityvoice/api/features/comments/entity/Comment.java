@@ -36,5 +36,11 @@ public class Comment {
     private int appliedDelta;
 
     @Column(nullable = false)
+    private int depth = 0;
+
+    @Column(nullable = false)
+    private int storyBonusDelta;
+
+    @Column(nullable = false)
     private Instant createdAt = Instant.now();
 }

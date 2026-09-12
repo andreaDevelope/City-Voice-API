@@ -35,7 +35,9 @@ The API listens on `http://localhost:8080`. No Maven profiles are defined.
 
 ## Schema
 
-`spring.jpa.hibernate.ddl-auto=create` recreates the schema at every startup, dropping existing data. Set it to `update` in `application.properties` to keep data between restarts.
+`spring.jpa.hibernate.ddl-auto=update` — Hibernate applies additive changes to the schema at startup and preserves existing data, including seeded badges and categories.
+
+`schema.sql` runs after Hibernate (`spring.jpa.defer-datasource-initialization=true`) and creates the partial unique indexes that JPA cannot express. It is idempotent and runs on every startup.
 
 ## Build
 

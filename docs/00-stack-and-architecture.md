@@ -12,31 +12,44 @@
 ## Package structure
 
     it/cityvoice/api/
-    ├── config/            # Spring configuration
+    ├── config/               # Spring configuration (security, scheduling)
+    ├── shared/
+    │   └── exceptions/       # Custom exceptions and the global handler
     └── features/
-        ├── auth/
-        │   ├── controller/
-        │   ├── dto/
-        │   ├── entity/
-        │   ├── repository/
-        │   ├── security/
-        │   ├── service/
-        │   └── util/
+        ├── auth/             # registration, login, recovery, JWT
+        ├── comments/
+        ├── impact/           # shared impact scoring service
+        ├── profile/
+        │   ├── badges/
+        │   ├── categories/
+        │   ├── user_badge/
+        │   └── user_rome/    # counters, visual identity, continuity scheduler
+        ├── reactions/
         └── stories/
 
-Package-by-feature: each feature contains its own controllers, services, entities and repositories. Cross-cutting Spring configuration lives in `config/`.
+Package-by-feature: each feature owns its `controllers`, `services`, `entity`, `repositories` and `dto` subpackages, plus `enums` where needed. Cross-cutting Spring configuration lives in `config/`; shared exception handling in `shared/exceptions/`.
+
+Two packages are not features in the usual sense. `impact/` holds a single service used by both `comments` and `reactions` to compute score deltas, placed outside either domain so neither depends on the other. `profile/` groups everything about a user's own progression and appearance, while content domains (`stories`, `comments`, `reactions`) stay top-level even though they reference `UserRome` as author.
 
 ## Endpoints
 
-Base path `/api/auth`:
+All paths are prefixed with `/api/cityvoice`. Controllers carry class-level `@PreAuthorize`; any future public endpoint goes in its own controller rather than mixing authenticated and anonymous methods in one class.
 
-| Method | Path | Auth required | Description |
+| Method | Path | Auth | Description |
 |---|---|---|---|
-| POST | `/register` | no | Creates a user, returns the recovery key |
-| POST | `/login` | no | Authenticates, sets the JWT cookie |
-| POST | `/recovery` | no | Resets the password using the recovery key |
-| GET | `/me` | yes | Returns the authenticated user |
-| POST | `/refresh-token` | yes | Refreshes the JWT |
+| POST | `/auth/register` | no | Creates a user, returns the recovery key |
+| POST | `/auth/login` | no | Authenticates, sets the JWT cookie |
+| POST | `/auth/recovery` | no | Resets the password using the recovery key |
+| GET | `/auth/me` | yes | Returns the authenticated user |
+| POST | `/auth/refresh-token` | yes | Refreshes the JWT |
+| GET | `/profile/me` | yes | Returns the profile and visual identity |
+| PUT | `/profile/visual-identity` | yes | Updates symbol and colour |
+| GET | `/badge/progress` | yes | Badge progress for all four categories |
+| POST | `/stories` | yes | Submits a story, returns updated badge progress |
+| POST | `/comments` | yes | Posts a comment or a reply |
+| POST | `/reactions` | yes | Adds, switches or removes a reaction (toggle) |
+
+`POST /reactions` handles three cases in one endpoint: no prior reaction creates one, the same type removes it, a different type switches the vote. It returns 200 rather than 201 because it does not always create a resource.
 
 springdoc-openapi is declared as a dependency but does not start under Spring Boot 4.1: version 2.8.13 targets Spring Boot 3.x. No OpenAPI UI is currently available.
 
@@ -54,13 +67,9 @@ Registration generates a recovery key: six words drawn with `SecureRandom` from 
 
 The plaintext key is returned once in the registration response and never stored. Only its BCrypt hash is persisted in `users.recovery_key_hash`.
 
-`POST /api/auth/recovery` verifies the key with `PasswordEncoder.matches` and resets the password.
+`POST /api/cityvoice/auth/recovery` verifies the key with `PasswordEncoder.matches` and resets the password.
 
 `RecoveryAttemptLimiter` blocks an account for 5 minutes after 5 failed attempts. It is in-memory: counters reset on restart and are not shared across instances.
-
-## Schema
-
-`spring.jpa.hibernate.ddl-auto=create` — Hibernate generates the schema from the entities at every startup. There are no migration files.
 
 ## Error handling
 
@@ -112,3 +121,10 @@ makes Spring trigger validation on the method call and throw
 `ConstraintViolationException` on failure — the same exception already used
 for path/query parameter validation, so one handler in `ExceptionHandlerClass`
 covers both cases.
+
+## Data model
+
+`spring.jpa.hibernate.ddl-auto=update` — Hibernate derives the schema from the entities and applies additive changes at startup. There is no migration tool: `schema.sql` covers only what Hibernate cannot express.
+
+See the entity-relationship diagram and the schema constraints in [02-scoring-and-badges.md](02-scoring-and-badges.md#entity-relationship-diagram).
+

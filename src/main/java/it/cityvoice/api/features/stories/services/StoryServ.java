@@ -8,11 +8,11 @@ import it.cityvoice.api.features.profile.categories.services.CategoryServ;
 import it.cityvoice.api.features.profile.user_badge.repositories.UserBadgeRepo;
 import it.cityvoice.api.features.profile.user_badge.services.UserBadgeService;
 import it.cityvoice.api.features.profile.user_rome.entity.UserRome;
+import it.cityvoice.api.features.profile.user_rome.services.NeighborhoodScoreServ;
 import it.cityvoice.api.features.profile.user_rome.services.UserRomeServ;
 import it.cityvoice.api.features.stories.dto.CreateStoryRequest;
 import it.cityvoice.api.features.stories.dto.StoryResponse;
 import it.cityvoice.api.features.stories.entity.Story;
-import it.cityvoice.api.features.stories.enums.StoryStatus;
 import it.cityvoice.api.features.stories.repositories.StoryRepo;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -36,6 +36,7 @@ public class StoryServ {
     private final CategoryServ categoryServ;
     private final UserBadgeService userBadgeService;
     private final UserBadgeRepo userBadgeRepo;
+    private final NeighborhoodScoreServ neighborhoodScoreServ;
 
     @Transactional
     public StoryResponse submitStory(UserRome userRome, @Valid CreateStoryRequest request) {
@@ -76,8 +77,7 @@ public class StoryServ {
     }
 
     private void updateNeighborhoodCounter(UserRome userRome) {
-        Long distinctDistricts = storyRepo.countDistinctDistrictByUserRomeAndStatusNot(userRome, StoryStatus.BLOCKED);
-        userRome.setNeighborhoodCounter(distinctDistricts.intValue());
+        userRome.setNeighborhoodCounter(neighborhoodScoreServ.calculateDistinctDistrictCount(userRome));
     }
 
     private void unlockEligibleNeighborhoodBadges(UserRome userRome) {
