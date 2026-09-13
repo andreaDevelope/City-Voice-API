@@ -13,12 +13,12 @@ import java.util.UUID;
 
 public interface CommentRepo extends JpaRepository<Comment, UUID> {
 
-    long countByStoryAndParentCommentIsNull(Story story);
-
-    long countByParentComment(Comment parentComment);
-
     @Query("SELECT DISTINCT c.story.district FROM Comment c " +
             "WHERE c.userRome = :userRome AND c.story.status <> :excludedStatus")
     List<String> findDistinctCommentedDistricts(@Param("userRome") UserRome userRome,
                                                 @Param("excludedStatus") StoryStatus excludedStatus);
+
+    List<Comment> findByParentComment(Comment parentComment);
+
+    List<Comment> findByStory(Story story);
 }

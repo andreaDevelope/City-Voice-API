@@ -41,6 +41,11 @@ public class UserRomeServ {
         return userRome;
     }
 
+    @Transactional
+    public void registerDailyAccess(Long appUserId) {
+        findByAppUserId(appUserId);
+    }
+
     public UserRome save(UserRome userRome) {
         return userRepo.save(userRome);
     }

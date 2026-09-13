@@ -108,7 +108,7 @@ public class AppUserService {
             );
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             AppUser appUser = loadUserByUsername(userDetails.getUsername());
-            userRomeServ.findByAppUserId(appUser.getId());
+            userRomeServ.registerDailyAccess(appUser.getId());
             return jwtTokenUtil.generateToken(userDetails);
         } catch (AuthenticationException e) {
             throw new BadCredentialsException("Username o password non validi", e);

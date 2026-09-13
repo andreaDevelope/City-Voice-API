@@ -2,6 +2,7 @@ package it.cityvoice.api.features.stories.controllers;
 
 import it.cityvoice.api.features.auth.entity.AppUser;
 import it.cityvoice.api.features.auth.services.AppUserService;
+import it.cityvoice.api.features.profile.badges.dto.CategoryProgressResponse;
 import it.cityvoice.api.features.profile.user_rome.entity.UserRome;
 import it.cityvoice.api.features.profile.user_rome.services.UserRomeServ;
 import it.cityvoice.api.features.stories.dto.CreateStoryRequest;
@@ -15,6 +16,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/cityvoice/stories")
@@ -35,5 +39,15 @@ public class StoryController {
         UserRome userRome = userRomeServ.findByAppUserId(appUser.getId());
         StoryResponse response = storyServ.submitStory(userRome, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @DeleteMapping("/{storyId}")
+    public ResponseEntity<List<CategoryProgressResponse>> deleteStory(
+            @AuthenticationPrincipal UserDetails user,
+            @PathVariable UUID storyId) {
+        AppUser appUser = appUserService.findByUsername(user.getUsername())
+                .orElseThrow(() -> new ResourceNotFoundException("Utente non trovato"));
+        UserRome userRome = userRomeServ.findByAppUserId(appUser.getId());
+        return ResponseEntity.ok(storyServ.deleteStory(userRome, storyId));
     }
 }

@@ -5,6 +5,7 @@ import it.cityvoice.api.features.comments.dto.CreateCommentRequest;
 import it.cityvoice.api.features.comments.entity.Comment;
 import it.cityvoice.api.features.comments.repositories.CommentRepo;
 import it.cityvoice.api.features.impact.ImpactScoreServ;
+import it.cityvoice.api.features.profile.badges.dto.CategoryProgressResponse;
 import it.cityvoice.api.features.profile.badges.entity.Badge;
 import it.cityvoice.api.features.profile.badges.services.BadgeServ;
 import it.cityvoice.api.features.profile.categories.entity.Category;
@@ -14,10 +15,12 @@ import it.cityvoice.api.features.profile.user_badge.services.UserBadgeService;
 import it.cityvoice.api.features.profile.user_rome.entity.UserRome;
 import it.cityvoice.api.features.profile.user_rome.services.NeighborhoodScoreServ;
 import it.cityvoice.api.features.profile.user_rome.services.UserRomeServ;
+import it.cityvoice.api.features.reactions.repositories.ReactionRepo;
 import it.cityvoice.api.features.stories.entity.Story;
 import it.cityvoice.api.features.stories.repositories.StoryRepo;
 import it.cityvoice.api.shared.exceptions.BadRequestException;
 import it.cityvoice.api.shared.exceptions.ResourceNotFoundException;
+import it.cityvoice.api.shared.exceptions.UnauthorizedException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,6 +29,7 @@ import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @Service
 @Validated
@@ -48,6 +52,7 @@ public class CommentServ {
     private final UserBadgeRepo userBadgeRepo;
     private final ImpactScoreServ impactScoreServ;
     private final NeighborhoodScoreServ neighborhoodScoreServ;
+    private final ReactionRepo  reactionRepo;
 
     @Transactional
     public CommentResponse createComment(UserRome author, @Valid CreateCommentRequest request) {
@@ -136,5 +141,46 @@ public class CommentServ {
                 userBadgeService.unlock(userRome, badge);
             }
         }
+    }
+
+    @Transactional
+    public List<CategoryProgressResponse> deleteComment(UserRome requester, UUID commentId) {
+        Comment comment = commentRepo.findById(commentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Commento non trovato"));
+
+        if (!isSameUser(requester, comment.getUserRome())) {
+            throw new UnauthorizedException("Non puoi eliminare un commento che non è tuo");
+        }
+
+        revokeImpact(comment.getParentComment() != null
+                ? comment.getParentComment().getUserRome()
+                : comment.getStory().getUserRome(), comment.getAppliedDelta());
+        revokeImpact(comment.getStory().getUserRome(), comment.getStoryBonusDelta());
+
+        deleteSubtree(comment);
+
+        requester.setActivityCounter(Math.max(0, requester.getActivityCounter() - COMMENT_ACTIVITY_POINTS));
+        requester.setNeighborhoodCounter(neighborhoodScoreServ.calculateDistinctDistrictCount(requester));
+        userRomeServ.save(requester);
+
+        return categoryServ.getAllCategories().stream()
+                .map(category -> badgeServ.getProgressForUser(requester, category.getName()))
+                .toList();
+    }
+
+    private void deleteSubtree(Comment comment) {
+        for (Comment child : commentRepo.findByParentComment(comment)) {
+            deleteSubtree(child);
+        }
+        reactionRepo.deleteAll(reactionRepo.findByComment(comment));
+        commentRepo.delete(comment);
+    }
+
+    private void revokeImpact(UserRome beneficiary, int delta) {
+        if (delta == 0) {
+            return;
+        }
+        beneficiary.setImpactCounter(Math.max(0, beneficiary.getImpactCounter() - delta));
+        userRomeServ.save(beneficiary);
     }
 }
