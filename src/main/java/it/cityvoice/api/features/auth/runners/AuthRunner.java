@@ -4,6 +4,7 @@ import it.cityvoice.api.features.auth.enums.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import it.cityvoice.api.features.auth.entity.AppUser;
@@ -14,6 +15,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @Component
+@Profile("!test")
 public class AuthRunner implements ApplicationRunner {
 
     @Autowired
