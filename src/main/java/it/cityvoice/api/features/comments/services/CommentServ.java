@@ -152,11 +152,6 @@ public class CommentServ {
             throw new UnauthorizedException("Non puoi eliminare un commento che non è tuo");
         }
 
-        revokeImpact(comment.getParentComment() != null
-                ? comment.getParentComment().getUserRome()
-                : comment.getStory().getUserRome(), comment.getAppliedDelta());
-        revokeImpact(comment.getStory().getUserRome(), comment.getStoryBonusDelta());
-
         deleteSubtree(comment);
 
         requester.setActivityCounter(Math.max(0, requester.getActivityCounter() - COMMENT_ACTIVITY_POINTS));
@@ -168,10 +163,18 @@ public class CommentServ {
                 .toList();
     }
 
+    // revoca i delta del commento e di tutta la sua discendenza, poi cancella le righe
     private void deleteSubtree(Comment comment) {
         for (Comment child : commentRepo.findByParentComment(comment)) {
             deleteSubtree(child);
         }
+
+        UserRome targetOwner = comment.getParentComment() != null
+                ? comment.getParentComment().getUserRome()
+                : comment.getStory().getUserRome();
+        revokeImpact(targetOwner, comment.getAppliedDelta());
+        revokeImpact(comment.getStory().getUserRome(), comment.getStoryBonusDelta());
+
         reactionRepo.deleteAll(reactionRepo.findByComment(comment));
         commentRepo.delete(comment);
     }
