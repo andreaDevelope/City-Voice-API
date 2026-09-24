@@ -42,6 +42,9 @@ import java.time.LocalDate;
         private int impactCounter = 0;
 
         private LocalDate lastActiveDate;
+
+        @Version
+        private Long version;
     }
 
 

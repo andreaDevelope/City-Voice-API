@@ -9,6 +9,7 @@ import it.cityvoice.api.features.stories.dto.CreateStoryRequest;
 import it.cityvoice.api.features.stories.dto.StoryResponse;
 import it.cityvoice.api.features.stories.services.StoryServ;
 import it.cityvoice.api.shared.exceptions.ResourceNotFoundException;
+import it.cityvoice.api.shared.retry.OptimisticRetryServ;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +30,7 @@ public class StoryController {
     private final StoryServ storyServ;
     private final AppUserService appUserService;
     private final UserRomeServ userRomeServ;
+    private final OptimisticRetryServ optimisticRetryServ;
 
     @PostMapping
     public ResponseEntity<StoryResponse> submitStory(
@@ -37,7 +39,7 @@ public class StoryController {
         AppUser appUser = appUserService.findByUsername(user.getUsername())
                 .orElseThrow(() -> new ResourceNotFoundException("Utente non trovato"));
         UserRome userRome = userRomeServ.findByAppUserId(appUser.getId());
-        StoryResponse response = storyServ.submitStory(userRome, request);
+        StoryResponse response = optimisticRetryServ.withRetry(() -> storyServ.submitStory(userRome, request));
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -48,6 +50,6 @@ public class StoryController {
         AppUser appUser = appUserService.findByUsername(user.getUsername())
                 .orElseThrow(() -> new ResourceNotFoundException("Utente non trovato"));
         UserRome userRome = userRomeServ.findByAppUserId(appUser.getId());
-        return ResponseEntity.ok(storyServ.deleteStory(userRome, storyId));
+        return ResponseEntity.ok(optimisticRetryServ.withRetry(() -> storyServ.deleteStory(userRome, storyId)));
     }
 }

@@ -9,6 +9,7 @@ import it.cityvoice.api.features.profile.badges.dto.CategoryProgressResponse;
 import it.cityvoice.api.features.profile.user_rome.entity.UserRome;
 import it.cityvoice.api.features.profile.user_rome.services.UserRomeServ;
 import it.cityvoice.api.shared.exceptions.ResourceNotFoundException;
+import it.cityvoice.api.shared.retry.OptimisticRetryServ;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +31,7 @@ public class CommentController {
     private final CommentServ commentServ;
     private final AppUserService appUserService;
     private final UserRomeServ userRomeServ;
+    private final OptimisticRetryServ optimisticRetryServ;
 
     @PostMapping
     public ResponseEntity<CommentResponse> createComment(
@@ -38,7 +40,7 @@ public class CommentController {
         AppUser appUser = appUserService.findByUsername(user.getUsername())
                 .orElseThrow(() -> new ResourceNotFoundException("Utente non trovato"));
         UserRome userRome = userRomeServ.findByAppUserId(appUser.getId());
-        CommentResponse response = commentServ.createComment(userRome, request);
+        CommentResponse response = optimisticRetryServ.withRetry(() -> commentServ.createComment(userRome, request));
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -49,6 +51,6 @@ public class CommentController {
         AppUser appUser = appUserService.findByUsername(user.getUsername())
                 .orElseThrow(() -> new ResourceNotFoundException("Utente non trovato"));
         UserRome userRome = userRomeServ.findByAppUserId(appUser.getId());
-        return ResponseEntity.ok(commentServ.deleteComment(userRome, commentId));
+        return ResponseEntity.ok(optimisticRetryServ.withRetry(() -> commentServ.deleteComment(userRome, commentId)));
     }
 }

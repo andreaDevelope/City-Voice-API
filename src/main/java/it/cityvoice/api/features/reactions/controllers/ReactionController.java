@@ -8,6 +8,7 @@ import it.cityvoice.api.features.reactions.dto.ReactToContentRequest;
 import it.cityvoice.api.features.reactions.dto.ReactionResponse;
 import it.cityvoice.api.features.reactions.services.ReactionServ;
 import it.cityvoice.api.shared.exceptions.ResourceNotFoundException;
+import it.cityvoice.api.shared.retry.OptimisticRetryServ;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,6 +25,7 @@ public class ReactionController {
     private final ReactionServ reactionServ;
     private final AppUserService appUserService;
     private final UserRomeServ userRomeServ;
+    private final OptimisticRetryServ optimisticRetryServ;
 
     @PostMapping
     public ResponseEntity<ReactionResponse> react(
@@ -32,7 +34,7 @@ public class ReactionController {
         AppUser appUser = appUserService.findByUsername(user.getUsername())
                 .orElseThrow(() -> new ResourceNotFoundException("Utente non trovato"));
         UserRome userRome = userRomeServ.findByAppUserId(appUser.getId());
-        ReactionResponse response = reactionServ.react(userRome, request);
+        ReactionResponse response = optimisticRetryServ.withRetry(() -> reactionServ.react(userRome, request));
         return ResponseEntity.ok(response);
     }
 }
