@@ -4,6 +4,7 @@ import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -45,6 +46,14 @@ public class ExceptionHandlerClass {
         log.warn("Conflitto risorsa", ex);
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(Map.of("message", ex.getMessage()));
+    }
+
+    // 409 - scrittura concorrente sullo stesso record, i tentativi sono esauriti
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<Map<String, String>> handleOptimisticLock(OptimisticLockingFailureException ex) {
+        log.warn("Conflitto di scrittura concorrente", ex);
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("message", "Operazione non completata per un conflitto temporaneo, riprova"));
     }
 
     // 400

@@ -85,6 +85,7 @@ public class ReactionServ {
 
         Reaction reaction = new Reaction();
         reaction.setUserRome(reactingUser);
+
         reaction.setStory(story);
         reaction.setComment(comment);
         reaction.setType(type);
