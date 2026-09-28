@@ -1,13 +1,15 @@
 # City Voice API
 
-Backend della piattaforma civica City Voice.
+Backend of the City Voice civic platform.
 
-Questo repository contiene l'API. Il frontend vive in un repository separato.
+This repository contains the API. The frontend lives in a separate repository.
 
-## Documentazione
+## Documentation
 
 - [Stack and architecture](docs/00-stack-and-architecture.md)
 - [Local setup](docs/01-local-setup.md)
+- [Scoring and badges](docs/02-scoring-and-badges.md)
+- [Districts](docs/03-districts.md)
 
 ## Quick start
 
@@ -15,6 +17,6 @@ Questo repository contiene l'API. Il frontend vive in un repository separato.
 
 Requires Java 21, Docker, and the `JWT_SECRET`, `DB_PASSWORD` and `POSTGRES_PASSWORD` environment variables. See [local setup](docs/01-local-setup.md) for details.
 
-## Stato del progetto
+## Project status
 
-In sviluppo. Struttura e funzionalità cambiano frequentemente.
+In development. Structure and features change frequently.
