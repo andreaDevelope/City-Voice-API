@@ -4,24 +4,6 @@
 
 Four categories, four counters on `UserRome`. Each category has a series of badges with increasing thresholds: a badge unlocks when the counter reaches its threshold. Badges with threshold 0 are not unlockable by comparison and must be granted as an explicit event (e.g. "Mo Chi Sei?" on registration).
 
-## Concurrent counter updates
-
-The counters on `UserRome` follow a read-decide-write path: the delta depends on the current value, so it must be read before knowing how much to apply. Two parallel transactions on the same user can read the same value and overwrite each other, losing a point with nobody noticing.
-
-`UserRome` therefore carries a `@Version` field. Hibernate increments it on every save and includes it in the update's `WHERE` clause: if the row changed after the read, the update matches nothing and `OptimisticLockingFailureException` is raised.
-
-Optimistic versioning was chosen over a pessimistic lock or an atomic SQL update: a lock would serialize updates on the same user, while an `UPDATE ... SET x = x + 1` cannot express a delta that depends on the value read, and does not return how much was actually applied — information needed to store `appliedDelta`.
-
-### Why the retry sits outside the transaction
-
-The conflict surfaces at commit time, when the transaction is already compromised and bound to roll back. Retrying inside it has no effect: it must close so that the next attempt can open a new one.
-
-That is why `OptimisticRetryServ` is not transactional and is invoked from the controllers, which pass the service call to it as a lambda. Each attempt goes through the Spring proxy and opens its own transaction.
-
-Annotating `@Retryable` directly on a `@Transactional` method, or making the wrapper transactional, looks equivalent but does not work: the retry would run inside the transaction that already failed.
-
-There are three attempts, with no wait between them, and only for `OptimisticLockingFailureException` — any other error surfaces immediately. Once the attempts are exhausted, the exception reaches the exception handler and becomes a 409.
-
 ### Activity
 
 Rewards content creation: story +1, comment +1. No deduplication, no floor.
@@ -35,9 +17,7 @@ Districts are counted by id, see [Districts](03-districts.md).
 
 Streak of consecutive days with at least one authenticated access. The first access counts as 1, each consecutive day adds +1, capped at 7. If the streak breaks, it restarts from 1. The `lastActiveDate` field guarantees a single increment per day. A scheduled job resets all counters every Monday (Europe/Rome timezone): users who register mid-week cannot complete the streak that week, and this is intended.
 
-Access tracking happens inside `UserRomeServ.findByAppUserId`, so any authenticated lookup of the user updates the streak — including login, which calls it purely for that side effect and discards the result.
-
-TODO: extract a dedicated `registerDailyAccess(appUserId)` method. The current call reads as dead code at the call site, and the intent is only clear from this note. Update this section when it is done.
+Access tracking happens inside `UserRomeServ.findByAppUserId`, so any authenticated lookup of the user updates the streak. Login goes through `registerDailyAccess`, a wrapper that exists only for that side effect.
 
 ### Impact
 
@@ -66,6 +46,24 @@ Comments store two separate deltas — `appliedDelta` toward the owner of the co
 Removal endpoints for stories and comments are not yet implemented. The `appliedDelta` and `storyBonusDelta` fields are already persisted in preparation: the inversion will have to read the stored values, never recompute them.
 
 Technical constraint to respect when it is implemented: the inversion must be performed in Java, never delegated to a database `ON DELETE CASCADE`. A cascade would delete descendant comment rows without reabsorbing the points they generated, leaving inflated counters with no trace.
+
+## Concurrent counter updates
+
+The counters on `UserRome` follow a read-decide-write path: the delta depends on the current value, so it must be read before knowing how much to apply. Two parallel transactions on the same user can read the same value and overwrite each other, losing a point with nobody noticing.
+
+`UserRome` therefore carries a `@Version` field. Hibernate increments it on every save and includes it in the update's `WHERE` clause: if the row changed after the read, the update matches nothing and `OptimisticLockingFailureException` is raised.
+
+Optimistic versioning was chosen over a pessimistic lock or an atomic SQL update: a lock would serialize updates on the same user, while an `UPDATE ... SET x = x + 1` cannot express a delta that depends on the value read, and does not return how much was actually applied — information needed to store `appliedDelta`.
+
+### Why the retry sits outside the transaction
+
+The conflict surfaces at commit time, when the transaction is already compromised and bound to roll back. Retrying inside it has no effect: it must close so that the next attempt can open a new one.
+
+That is why `OptimisticRetryServ` is not transactional and is invoked from the controllers, which pass the service call to it as a lambda. Each attempt goes through the Spring proxy and opens its own transaction.
+
+Annotating `@Retryable` directly on a `@Transactional` method, or making the wrapper transactional, looks equivalent but does not work: the retry would run inside the transaction that already failed.
+
+There are three attempts, with no wait between them, and only for `OptimisticLockingFailureException` — any other error surfaces immediately. Once the attempts are exhausted, the exception reaches the exception handler and becomes a 409.
 
 ## Schema and constraints
 
@@ -118,6 +116,7 @@ erDiagram
         int continuityCounter
         int impactCounter
         LocalDate lastActiveDate
+        Long version
     }
     
     DISTRICT {
