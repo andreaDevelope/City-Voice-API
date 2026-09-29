@@ -57,7 +57,7 @@ class DeletionIntegrationTest extends IntegrationTestBase {
 
     private UUID postStory(TestUser author) throws Exception {
         CreateStoryRequest request = new CreateStoryRequest(
-                "decoro", FAKER.address().cityName(), FAKER.lorem().sentence(3),
+                "decoro", 13L, FAKER.lorem().sentence(3),
                 FAKER.lorem().sentence(5), FAKER.lorem().paragraph());
         String body = mockMvc.perform(post("/api/cityvoice/stories")
                         .with(user(author.username()))

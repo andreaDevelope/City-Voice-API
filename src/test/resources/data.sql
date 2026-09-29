@@ -37,3 +37,7 @@ INSERT INTO badges (id, category_id, name, description, mission_threshold, seque
 -- Le tabelle usano GenerationType.IDENTITY: allineo le sequenze agli id inseriti a mano.
 SELECT setval(pg_get_serial_sequence('categories', 'id'), (SELECT MAX(id) FROM categories));
 SELECT setval(pg_get_serial_sequence('badges', 'id'), (SELECT MAX(id) FROM badges));
+
+INSERT INTO districts (id, name, municipio, type) VALUES
+  (1, 'Monti', 'I', 'RIONE'),
+  (13, 'Trastevere', 'I', 'RIONE');

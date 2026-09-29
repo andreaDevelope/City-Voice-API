@@ -23,7 +23,7 @@ public record StoryResponse(
         return new StoryResponse(
                 story.getId(),
                 story.getCategory(),
-                story.getDistrict(),
+                story.getDistrict().getName(),
                 story.getTitle(),
                 story.getDescription(),
                 story.getStoryContent(),

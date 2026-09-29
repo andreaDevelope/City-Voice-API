@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.UUID;
 
 public interface StoryRepo extends JpaRepository<Story, UUID> {
-
-    @Query("SELECT DISTINCT s.district FROM Story s WHERE s.userRome = :userRome AND s.status <> :excludedStatus")
-    List<String> findDistinctDistricts(@Param("userRome") UserRome userRome, @Param("excludedStatus") StoryStatus excludedStatus);
+    @Query("SELECT DISTINCT s.district.id FROM Story s WHERE s.userRome = :userRome AND s.status <> :excludedStatus")
+    List<Long> findDistinctDistricts(@Param("userRome") UserRome userRome, @Param("excludedStatus") StoryStatus excludedStatus);
 }

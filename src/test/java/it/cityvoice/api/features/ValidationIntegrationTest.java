@@ -36,7 +36,7 @@ class ValidationIntegrationTest extends IntegrationTestBase {
 
     private UUID postStory(TestUser author) throws Exception {
         CreateStoryRequest request = new CreateStoryRequest(
-                "decoro", FAKER.address().cityName(), FAKER.lorem().sentence(3),
+                "decoro", 13L, FAKER.lorem().sentence(3),
                 FAKER.lorem().sentence(5), FAKER.lorem().paragraph());
         String body = mockMvc.perform(post("/api/cityvoice/stories")
                         .with(user(author.username()))
@@ -152,7 +152,7 @@ class ValidationIntegrationTest extends IntegrationTestBase {
     void anonymousSubmissionIsRejected() throws Exception {
         // nessun .with(user(...)): richiesta anonima
         CreateStoryRequest request = new CreateStoryRequest(
-                "decoro", "Trastevere", "Titolo", "Descrizione", "Contenuto");
+                "decoro", 13L, "Titolo", "Descrizione", "Contenuto");
 
         mockMvc.perform(post("/api/cityvoice/stories")
                         .contentType(MediaType.APPLICATION_JSON)

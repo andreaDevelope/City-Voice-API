@@ -46,7 +46,7 @@ class StoryIntegrationTest extends IntegrationTestBase {
     @DisplayName("l'invio di una storia incrementa activity e neighborhood")
     void submitStoryIncrementsCounters() throws Exception {
         CreateStoryRequest request = new CreateStoryRequest(
-                "decoro", "Trastevere", "Cassonetti pieni",
+                "decoro", 13L, "Cassonetti pieni",
                 "Rifiuti a terra da giorni", "Sono pieni da una settimana");
 
         mockMvc.perform(post("/api/cityvoice/stories")
@@ -67,9 +67,9 @@ class StoryIntegrationTest extends IntegrationTestBase {
     @DisplayName("due storie nello stesso quartiere contano come un solo quartiere")
     void sameDistrictCountsOnce() throws Exception {
         CreateStoryRequest first = new CreateStoryRequest(
-                "decoro", "Trastevere", "Prima", "Descrizione", "Contenuto");
+                "decoro", 13L, "Prima", "Descrizione", "Contenuto");
         CreateStoryRequest second = new CreateStoryRequest(
-                "sicurezza", "Trastevere", "Seconda", "Descrizione", "Contenuto");
+                "sicurezza", 13L, "Seconda", "Descrizione", "Contenuto");
 
         mockMvc.perform(post("/api/cityvoice/stories")
                 .contentType(MediaType.APPLICATION_JSON)

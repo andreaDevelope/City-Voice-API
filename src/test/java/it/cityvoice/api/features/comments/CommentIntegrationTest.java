@@ -4,6 +4,7 @@ import it.cityvoice.api.IntegrationTestBase;
 import it.cityvoice.api.features.comments.dto.CreateCommentRequest;
 import it.cityvoice.api.features.comments.entity.Comment;
 import it.cityvoice.api.features.comments.repositories.CommentRepo;
+import it.cityvoice.api.features.districts.repositories.DistrictRepo;
 import it.cityvoice.api.features.profile.user_rome.entity.UserRome;
 import it.cityvoice.api.features.profile.user_rome.repositories.UserRomeRepo;
 import it.cityvoice.api.features.stories.entity.Story;
@@ -34,6 +35,9 @@ class CommentIntegrationTest extends IntegrationTestBase {
     @Autowired
     private CommentRepo commentRepo;
 
+    @Autowired
+    private DistrictRepo districtRepo;
+
     private TestUser storyOwner;
     private TestUser commenter;
     private TestUser replier;
@@ -50,7 +54,7 @@ class CommentIntegrationTest extends IntegrationTestBase {
         Story story = new Story();
         story.setUserRome(userRomeRepo.findByAppUserId(storyOwner.appUserId()));
         story.setCategory("decoro");
-        story.setDistrict(FAKER.address().cityName());
+        story.setDistrict(districtRepo.getReferenceById(13L));
         story.setTitle(FAKER.lorem().sentence(3));
         story.setDescription(FAKER.lorem().sentence(5));
         story.setStoryContent(FAKER.lorem().paragraph());

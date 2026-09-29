@@ -18,7 +18,7 @@ public class NeighborhoodScoreServ {
     private final CommentRepo commentRepo;
 
     public int calculateDistinctDistrictCount(UserRome userRome) {
-        Set<String> districts = new HashSet<>(storyRepo.findDistinctDistricts(userRome, StoryStatus.BLOCKED));
+        Set<Long> districts = new HashSet<>(storyRepo.findDistinctDistricts(userRome, StoryStatus.BLOCKED));
         districts.addAll(commentRepo.findDistinctCommentedDistricts(userRome, StoryStatus.BLOCKED));
         return districts.size();
     }
