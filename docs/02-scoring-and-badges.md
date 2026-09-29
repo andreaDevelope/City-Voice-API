@@ -29,6 +29,7 @@ Rewards content creation: story +1, comment +1. No deduplication, no floor.
 ### Neighborhood
 
 Number of distinct districts where the user has active content, computed as the union of the districts of stories they wrote and the districts of stories they commented on. Reactions do not contribute. Recomputed with a query on every action rather than incremented: a user with three stories in the same district counts as 1.
+Districts are counted by id, see [Districts](03-districts.md).
 
 ### Continuity
 
@@ -88,6 +89,7 @@ The real protection is two **partial unique indexes** defined in `schema.sql`, o
 erDiagram
     APP_USER ||--|| USER_ROME : "has identity"
     USER_ROME ||--o{ STORY : "writes"
+    DISTRICT ||--o{ STORY : "located in"
     USER_ROME ||--o{ COMMENT : "writes"
     USER_ROME ||--o{ REACTION : "reacts"
     USER_ROME ||--o{ USER_BADGE : "unlocks"
@@ -117,12 +119,19 @@ erDiagram
         int impactCounter
         LocalDate lastActiveDate
     }
+    
+    DISTRICT {
+        Long id PK
+        String name
+        String municipio
+        String type
+    }
 
     STORY {
         UUID id PK
         Long user_rome_id FK
         String category
-        String district
+        Long district_id FK
         String title
         String description
         String storyContent
