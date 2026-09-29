@@ -2,6 +2,7 @@ package it.cityvoice.api.features.stories.services;
 
 import it.cityvoice.api.features.comments.entity.Comment;
 import it.cityvoice.api.features.comments.repositories.CommentRepo;
+import it.cityvoice.api.features.districts.services.DistrictServ;
 import it.cityvoice.api.features.profile.badges.dto.CategoryProgressResponse;
 import it.cityvoice.api.features.profile.badges.entity.Badge;
 import it.cityvoice.api.features.profile.badges.services.BadgeServ;
@@ -47,13 +48,14 @@ public class StoryServ {
     private final NeighborhoodScoreServ neighborhoodScoreServ;
     private final CommentRepo commentRepo;
     private final ReactionRepo  reactionRepo;
+    private final DistrictServ districtServ;
 
     @Transactional
     public StoryResponse submitStory(UserRome userRome, @Valid CreateStoryRequest request) {
         Story story = new Story();
         story.setUserRome(userRome);
         story.setCategory(request.category());
-        story.setDistrict(request.district());
+        story.setDistrict(districtServ.getById(request.districtId()));
         story.setTitle(request.title());
         story.setDescription(request.description());
         story.setStoryContent(request.storyContent());

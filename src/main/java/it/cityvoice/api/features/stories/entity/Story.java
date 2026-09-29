@@ -1,5 +1,6 @@
 package it.cityvoice.api.features.stories.entity;
 
+import it.cityvoice.api.features.districts.entity.District;
 import it.cityvoice.api.features.profile.user_rome.entity.UserRome;
 import it.cityvoice.api.features.stories.enums.StoryStatus;
 import jakarta.persistence.*;
@@ -24,8 +25,9 @@ public class Story {
     @Column(nullable = false)
     private String category;
 
-    @Column(nullable = false)
-    private String district;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "district_id", nullable = false)
+    private District district;
 
     @Column(nullable = false)
     private String title;

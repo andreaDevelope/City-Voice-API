@@ -21,6 +21,11 @@ public class DistrictServ {
 
     private final DistrictRepo districtRepo;
 
+    public District getById(Long districtId) {
+        return districtRepo.findById(districtId)
+                .orElseThrow(() -> new ResourceNotFoundException("Quartiere non trovato"));
+    }
+
     // quartieri raggruppati per municipio, nell'ordine di dichiarazione dell'enum
     public List<MunicipioGroupResponse> getGroupedByMunicipio() {
         Map<Municipio, List<District>> byMunicipio = districtRepo.findAll().stream()
