@@ -68,7 +68,8 @@ public class UserRomeServ {
         if (yesterday.equals(userRome.getLastActiveDate())) {
             userRome.setContinuityCounter(Math.min(userRome.getContinuityCounter() + 1, CONTINUITY_CAP));
         } else {
-            userRome.setContinuityCounter(0);
+            // l'accesso di oggi è già il primo giorno della nuova serie
+            userRome.setContinuityCounter(1);
         }
         userRome.setLastActiveDate(today);
         userRepo.save(userRome);
