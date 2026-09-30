@@ -15,7 +15,7 @@ Districts are counted by id, see [Districts](03-districts.md).
 
 ### Continuity
 
-Streak of consecutive days with at least one authenticated access. The first access counts as 1, each consecutive day adds +1, capped at 7. If the streak breaks, it restarts from 1. The `lastActiveDate` field guarantees a single increment per day. A scheduled job resets all counters every Monday (Europe/Rome timezone): users who register mid-week cannot complete the streak that week, and this is intended.
+Streak of consecutive days with at least one authenticated access. The first access counts as 1, each consecutive day adds +1, capped at 7. If the streak breaks, it restarts from 1. The `lastActiveDate` field guarantees a single increment per day. A scheduled job resets every user's continuity counter every Monday (Europe/Rome timezone), leaving the other counters untouched: users who register mid-week cannot complete the streak that week, and this is intended.
 
 Access tracking happens inside `UserRomeServ.findByAppUserId`, so any authenticated lookup of the user updates the streak. Login goes through `registerDailyAccess`, a wrapper that exists only for that side effect.
 
@@ -41,11 +41,13 @@ The floor applies to the user's total, not to individual content: dislikes on on
 
 Comments store two separate deltas — `appliedDelta` toward the owner of the content they reply to, and `storyBonusDelta` toward the story owner — because the two beneficiaries can be different people and must be adjusted separately.
 
-### Content removal — to be defined
+### Content removal
 
-Removal endpoints for stories and comments are not yet implemented. The `appliedDelta` and `storyBonusDelta` fields are already persisted in preparation: the inversion will have to read the stored values, never recompute them.
+`DELETE /stories/{storyId}` and `DELETE /comments/{commentId}` are restricted to the author. Deleting a comment removes every reply below it and the reactions each one received; deleting a story removes all its comments and all their reactions.
 
-Technical constraint to respect when it is implemented: the inversion must be performed in Java, never delegated to a database `ON DELETE CASCADE`. A cascade would delete descendant comment rows without reabsorbing the points they generated, leaving inflated counters with no trace.
+Point reversals read the stored `appliedDelta` and `storyBonusDelta` values rather than recomputing them. The deleting author loses the activity earned by the removed content, and their neighborhood count is recomputed; the response returns the updated badge progress.
+
+Deletion is performed in Java, never through a database `ON DELETE CASCADE`, which would remove the rows without reversing the points.
 
 ## Concurrent counter updates
 
