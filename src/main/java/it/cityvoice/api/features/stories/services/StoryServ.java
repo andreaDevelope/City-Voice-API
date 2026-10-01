@@ -89,7 +89,7 @@ public class StoryServ {
     }
 
     private void updateNeighborhoodCounter(UserRome userRome) {
-        userRome.setNeighborhoodCounter(neighborhoodScoreServ.calculateDistinctDistrictCount(userRome));
+        userRome.setNeighborhoodCounter(neighborhoodScoreServ.calculateDistinctMunicipioCount(userRome));
     }
 
     private void unlockEligibleNeighborhoodBadges(UserRome userRome) {
@@ -133,7 +133,7 @@ public class StoryServ {
 
         requester.setImpactCounter(Math.max(0, requester.getImpactCounter() - lostImpact));
         requester.setActivityCounter(Math.max(0, requester.getActivityCounter() - 1));
-        requester.setNeighborhoodCounter(neighborhoodScoreServ.calculateDistinctDistrictCount(requester));
+        requester.setNeighborhoodCounter(neighborhoodScoreServ.calculateDistinctMunicipioCount(requester));
         userRomeServ.save(requester);
 
         return categoryServ.getAllCategories().stream()

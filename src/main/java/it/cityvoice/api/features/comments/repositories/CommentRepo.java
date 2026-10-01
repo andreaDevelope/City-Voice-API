@@ -1,6 +1,7 @@
 package it.cityvoice.api.features.comments.repositories;
 
 import it.cityvoice.api.features.comments.entity.Comment;
+import it.cityvoice.api.features.districts.enums.Municipio;
 import it.cityvoice.api.features.profile.user_rome.entity.UserRome;
 import it.cityvoice.api.features.stories.entity.Story;
 import it.cityvoice.api.features.stories.enums.StoryStatus;
@@ -13,10 +14,10 @@ import java.util.UUID;
 
 public interface CommentRepo extends JpaRepository<Comment, UUID> {
 
-    @Query("SELECT DISTINCT c.story.district.id FROM Comment c " +
+    @Query("SELECT DISTINCT c.story.district.municipio FROM Comment c " +
             "WHERE c.userRome = :userRome AND c.story.status <> :excludedStatus")
-    List<Long> findDistinctCommentedDistricts(@Param("userRome") UserRome userRome,
-                                              @Param("excludedStatus") StoryStatus excludedStatus);
+    List<Municipio> findDistinctCommentedMunicipi(@Param("userRome") UserRome userRome,
+                                                  @Param("excludedStatus") StoryStatus excludedStatus);
 
     List<Comment> findByParentComment(Comment parentComment);
 

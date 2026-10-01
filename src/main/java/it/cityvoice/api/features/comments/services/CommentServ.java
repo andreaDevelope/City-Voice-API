@@ -95,7 +95,7 @@ public class CommentServ {
         author.setActivityCounter(author.getActivityCounter() + COMMENT_ACTIVITY_POINTS);
         unlockEligibleBadges(author, ACTIVITY_CATEGORY, author.getActivityCounter());
 
-        author.setNeighborhoodCounter(neighborhoodScoreServ.calculateDistinctDistrictCount(author));
+        author.setNeighborhoodCounter(neighborhoodScoreServ.calculateDistinctMunicipioCount(author));
         unlockEligibleBadges(author, NEIGHBORHOOD_CATEGORY, author.getNeighborhoodCounter());
 
         userRomeServ.save(author);
@@ -155,7 +155,7 @@ public class CommentServ {
         deleteSubtree(comment);
 
         requester.setActivityCounter(Math.max(0, requester.getActivityCounter() - COMMENT_ACTIVITY_POINTS));
-        requester.setNeighborhoodCounter(neighborhoodScoreServ.calculateDistinctDistrictCount(requester));
+        requester.setNeighborhoodCounter(neighborhoodScoreServ.calculateDistinctMunicipioCount(requester));
         userRomeServ.save(requester);
 
         return categoryServ.getAllCategories().stream()

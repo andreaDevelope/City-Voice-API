@@ -1,5 +1,6 @@
 package it.cityvoice.api.features.stories.repositories;
 
+import it.cityvoice.api.features.districts.enums.Municipio;
 import it.cityvoice.api.features.profile.user_rome.entity.UserRome;
 import it.cityvoice.api.features.stories.entity.Story;
 import it.cityvoice.api.features.stories.enums.StoryStatus;
@@ -11,6 +12,6 @@ import java.util.List;
 import java.util.UUID;
 
 public interface StoryRepo extends JpaRepository<Story, UUID> {
-    @Query("SELECT DISTINCT s.district.id FROM Story s WHERE s.userRome = :userRome AND s.status <> :excludedStatus")
-    List<Long> findDistinctDistricts(@Param("userRome") UserRome userRome, @Param("excludedStatus") StoryStatus excludedStatus);
+    @Query("SELECT DISTINCT s.district.municipio FROM Story s WHERE s.userRome = :userRome AND s.status <> :excludedStatus")
+    List<Municipio> findDistinctMunicipi(@Param("userRome") UserRome userRome, @Param("excludedStatus") StoryStatus excludedStatus);
 }
