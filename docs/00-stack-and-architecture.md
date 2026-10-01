@@ -12,12 +12,14 @@
 ## Package structure
 
     it/cityvoice/api/
-    ├── config/               # Spring configuration (security, scheduling)
+    ├── config/               # Spring configuration: security, CORS, scheduling, retry, OpenAPI
     ├── shared/
-    │   └── exceptions/       # Custom exceptions and the global handler
+    │   ├── exceptions/       # Custom exceptions and the global handler
+    │   └── retry/            # Retry for optimistic locking conflicts
     └── features/
         ├── auth/             # registration, login, recovery, JWT
         ├── comments/
+        ├── districts/        # Rome districts, public list for the story form
         ├── impact/           # shared impact scoring service
         ├── profile/
         │   ├── badges/
@@ -27,13 +29,15 @@
         ├── reactions/
         └── stories/
 
-Package-by-feature: each feature owns its `controllers`, `services`, `entity`, `repositories` and `dto` subpackages, plus `enums` where needed. Cross-cutting Spring configuration lives in `config/`; shared exception handling in `shared/exceptions/`.
+Package-by-feature: each feature owns its `controllers`, `services`, `entity`, `repositories` and `dto` subpackages, plus `enums` where needed. Cross-cutting Spring configuration lives in `config/`; shared exception handling in `shared/exceptions/`, and the optimistic locking retry wrapper in `shared/retry/`.
 
 Two packages are not features in the usual sense. `impact/` holds a single service used by both `comments` and `reactions` to compute score deltas, placed outside either domain so neither depends on the other. `profile/` groups everything about a user's own progression and appearance, while content domains (`stories`, `comments`, `reactions`) stay top-level even though they reference `UserRome` as author.
 
 ## Endpoints
 
-All paths are prefixed with `/api/cityvoice`. Controllers carry class-level `@PreAuthorize`; any future public endpoint goes in its own controller rather than mixing authenticated and anonymous methods in one class.
+All paths are prefixed with `/api/cityvoice`. Authenticated controllers carry class-level `@PreAuthorize("isAuthenticated()")`. Endpoints open to anonymous users live under `/public/`, in controllers prefixed `Public` and without `@PreAuthorize`, never mixed with authenticated methods. `AuthController` is the exception: it predates this convention and its paths are not under `/public/`.
+
+During development `SecurityConfig` lets every request through at filter level (`anyRequest().permitAll()`), so access control relies entirely on `@PreAuthorize`. It must be restricted before deployment.
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
@@ -46,8 +50,11 @@ All paths are prefixed with `/api/cityvoice`. Controllers carry class-level `@Pr
 | PUT | `/profile/visual-identity` | yes | Updates symbol and colour |
 | GET | `/badge/progress` | yes | Badge progress for all four categories |
 | POST | `/stories` | yes | Submits a story, returns updated badge progress |
+| DELETE | `/stories/{storyId}` | yes | Deletes one of the author's stories, returns updated badge progress |
 | POST | `/comments` | yes | Posts a comment or a reply |
+| DELETE | `/comments/{commentId}` | yes | Deletes one of the author's comments and its replies, returns updated badge progress |
 | POST | `/reactions` | yes | Adds, switches or removes a reaction (toggle) |
+| GET | `/public/districts` | no | Districts grouped by municipio, for the story form |
 
 `POST /reactions` handles three cases in one endpoint: no prior reaction creates one, the same type removes it, a different type switches the vote. It returns 200 rather than 201 because it does not always create a resource.
 
@@ -101,12 +108,12 @@ expired token is handled by `JwtAuthenticationEntryPoint` instead.
 | Exception | Status |
 |---|---|
 | `ConstraintViolationException` | 400, body maps field to message |
-| `BadRequestException`, `IllegalArgumentException`, `DataIntegrityViolationException` | 400 |
+| `BadRequestException`, `IllegalArgumentException`, `DataIntegrityViolationException`, `MethodArgumentNotValidException`, `HttpMessageNotReadableException` | 400 |
 | `BadCredentialsException` | 401 |
 | `AccessDeniedException`, `UnauthorizedException` | 403 |
 | `ResourceNotFoundException` | 404 |
-| `ConflictException` | 409 |
-| everything else | 500 |
+| `ConflictException`, `OptimisticLockingFailureException` | 409 |
+| `InternalServerErrorException`, everything else | 500 |
 
 Response bodies are always JSON: `{"message": "..."}`.
 

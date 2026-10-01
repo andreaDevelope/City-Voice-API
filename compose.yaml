@@ -7,3 +7,8 @@ services:
       - 'POSTGRES_USER=postgres'
     ports:
       - '5432:5432'
+    volumes:
+      - 'cityvoice-data:/var/lib/postgresql/data'
+
+volumes:
+  cityvoice-data:
