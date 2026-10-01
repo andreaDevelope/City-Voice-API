@@ -40,4 +40,5 @@ SELECT setval(pg_get_serial_sequence('badges', 'id'), (SELECT MAX(id) FROM badge
 
 INSERT INTO districts (id, name, municipio, type) VALUES
   (1, 'Monti', 'I', 'RIONE'),
-  (13, 'Trastevere', 'I', 'RIONE');
+  (13, 'Trastevere', 'I', 'RIONE'),
+  (176, 'Garbatella', 'VIII', 'QUARTIERE');

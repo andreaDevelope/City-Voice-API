@@ -64,10 +64,11 @@ class StoryIntegrationTest extends IntegrationTestBase {
 
     @Test
     @WithMockUser(username = "autore")
-    @DisplayName("due storie nello stesso quartiere contano come un solo quartiere")
-    void sameDistrictCountsOnce() throws Exception {
+    @DisplayName("due quartieri dello stesso municipio contano come un solo municipio")
+    void sameMunicipioCountsOnce() throws Exception {
+        // Monti e Trastevere stanno entrambi nel Municipio I
         CreateStoryRequest first = new CreateStoryRequest(
-                "decoro", 13L, "Prima", "Descrizione", "Contenuto");
+                "decoro", 1L, "Prima", "Descrizione", "Contenuto");
         CreateStoryRequest second = new CreateStoryRequest(
                 "sicurezza", 13L, "Seconda", "Descrizione", "Contenuto");
 
@@ -81,5 +82,26 @@ class StoryIntegrationTest extends IntegrationTestBase {
         UserRome author = userRomeRepo.findByAppUserId(authorAppUserId);
         assertEquals(2, author.getActivityCounter());
         assertEquals(1, author.getNeighborhoodCounter());
+    }
+
+    @Test
+    @WithMockUser(username = "autore")
+    @DisplayName("due municipi diversi contano due")
+    void differentMunicipiCountTwice() throws Exception {
+        // Trastevere (Municipio I) e Garbatella (Municipio VIII)
+        CreateStoryRequest first = new CreateStoryRequest(
+                "decoro", 13L, "Prima", "Descrizione", "Contenuto");
+        CreateStoryRequest second = new CreateStoryRequest(
+                "sicurezza", 176L, "Seconda", "Descrizione", "Contenuto");
+
+        mockMvc.perform(post("/api/cityvoice/stories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(first)));
+        mockMvc.perform(post("/api/cityvoice/stories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(second)));
+
+        UserRome author = userRomeRepo.findByAppUserId(authorAppUserId);
+        assertEquals(2, author.getNeighborhoodCounter());
     }
 }
