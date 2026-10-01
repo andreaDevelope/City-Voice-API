@@ -10,8 +10,9 @@ Rewards content creation: story +1, comment +1. No deduplication, no floor.
 
 ### Neighborhood
 
-Number of distinct districts where the user has active content, computed as the union of the districts of stories they wrote and the districts of stories they commented on. Reactions do not contribute. Recomputed with a query on every action rather than incremented: a user with three stories in the same district counts as 1.
-Districts are counted by id, see [Districts](03-districts.md).
+Number of distinct *municipi* where the user has active content, computed as the union of the municipi of the stories they wrote and of the stories they commented on. Reactions do not contribute. Recomputed with a query on every action rather than incremented: three stories in the same municipio count as 1.
+
+Each story is tied to a district and each district to a municipio, see [Districts](03-districts.md).
 
 ### Continuity
 

@@ -1,6 +1,6 @@
 # Districts
 
-Stories are tied to a district. The district is the unit the neighborhood score counts distinct zones on, so it is a closed set.
+Stories are tied to a district, chosen from a closed list. The neighborhood score does not count districts but the municipi they belong to: 354 units are too fine-grained for a score.
 
 ## Why 354 units
 
