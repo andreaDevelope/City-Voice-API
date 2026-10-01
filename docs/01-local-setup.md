@@ -21,7 +21,11 @@ PostgreSQL 17 is defined in `compose.yaml`. The `spring-boot-docker-compose` dep
 
 Database `cityvoice`, user `postgres`, port 5432.
 
-The datasource URL is `jdbc:postgresql://postgres:5432/cityvoice`, which resolves the container by service name. Running the application outside the Docker network requires changing the host to `localhost`.
+On startup, `spring-boot-docker-compose` reads `compose.yaml` and connects the application to the container, ignoring `spring.datasource.url`. The URL is only used when Docker Compose support is disabled.
+
+Data lives in the `cityvoice-data` volume and survives `docker compose down`; `docker compose down -v` deletes it.
+
+Categories, badges and districts are reference data loaded by hand into the development database. Seed files are not in the repository yet.
 
 ## Run
 
@@ -41,13 +45,13 @@ Docker must be running: integration tests start a throwaway PostgreSQL 17 contai
 
 `IntegrationTestBase` starts a single container shared by every test class and injects its credentials via `@DynamicPropertySource`. The schema is recreated from scratch on every run (`ddl-auto=create-drop` in `src/test/resources/application.properties`) and each test runs in a transaction that is rolled back at the end, so tests do not interfere with each other.
 
-Categories and badges are seeded from `src/test/resources/data.sql`. It mirrors the rows inserted by hand in the development database and must be updated whenever those change, otherwise tests fail on mismatched thresholds or names.
+Categories, badges and three districts are seeded from `src/test/resources/data.sql`. Two districts share a municipio (Monti and Trastevere, I) and one belongs to another (Garbatella, VIII), to test neighborhood counting. The categories and badges mirror the rows inserted by hand in the development database and must be updated whenever those change, otherwise tests fail on mismatched thresholds or names.
 
 Tests extend `IntegrationTestBase` and call the endpoints through MockMvc, authenticating per request with `.with(user(username))`. Users are created with `registerUser()`, which generates random usernames using Datafaker.
 
 ## Schema
 
-`spring.jpa.hibernate.ddl-auto=update` — Hibernate applies additive changes to the schema at startup and preserves existing data, including seeded badges and categories.
+`spring.jpa.hibernate.ddl-auto=update` — Hibernate applies additive changes to the schema at startup and preserves existing data, including seeded badges and categories. `update` never drops columns or tables, and cannot add a `NOT NULL` column to a table that already has rows: those changes require a manual SQL statement.
 
 `schema.sql` runs after Hibernate (`spring.jpa.defer-datasource-initialization=true`) and creates the partial unique indexes that JPA cannot express. It is idempotent and runs on every startup.
 
