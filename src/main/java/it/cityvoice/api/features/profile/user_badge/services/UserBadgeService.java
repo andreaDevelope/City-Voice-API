@@ -30,7 +30,6 @@ public class UserBadgeService {
         userBadge.setUserRome(userRome);
         userBadge.setBadge(badge);
         userBadge.setUnlockedAt(Instant.now());
-        userBadge.setFeatured(false);
         return userBadgeRepo.save(userBadge);
     }
 

@@ -30,6 +30,6 @@ public class UserBadge {
     @Column(nullable = false)
     private Instant unlockedAt;
 
-    @Column(nullable = false)
-    private boolean featured = false;
+    @Column(name = "featured_position")
+    private Integer featuredPosition = null;
 }
