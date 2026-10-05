@@ -58,8 +58,7 @@ public class UserRomeServ {
     }
 
     @Transactional
-    public VisualIdentityResponse updateVisualIdentity(Long appUserId, @Valid UpdateVisualIdentityRequest request) {
-        UserRome userRome = findByAppUserId(appUserId);
+    public VisualIdentityResponse updateVisualIdentity(UserRome userRome, @Valid UpdateVisualIdentityRequest request) {
         userRome.setSymbol(request.symbol());
         userRome.setColor(request.color());
         UserRome saved = userRepo.save(userRome);
