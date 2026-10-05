@@ -1,14 +1,11 @@
 package it.cityvoice.api.features.comments.controllers;
 
-import it.cityvoice.api.features.auth.entity.AppUser;
-import it.cityvoice.api.features.auth.services.AppUserService;
 import it.cityvoice.api.features.comments.dto.CommentResponse;
 import it.cityvoice.api.features.comments.dto.CreateCommentRequest;
 import it.cityvoice.api.features.comments.services.CommentServ;
 import it.cityvoice.api.features.profile.badges.dto.CategoryProgressResponse;
 import it.cityvoice.api.features.profile.user_rome.entity.UserRome;
 import it.cityvoice.api.features.profile.user_rome.services.UserRomeServ;
-import it.cityvoice.api.shared.exceptions.ResourceNotFoundException;
 import it.cityvoice.api.shared.retry.OptimisticRetryServ;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,7 +26,6 @@ import java.util.UUID;
 public class CommentController {
 
     private final CommentServ commentServ;
-    private final AppUserService appUserService;
     private final UserRomeServ userRomeServ;
     private final OptimisticRetryServ optimisticRetryServ;
 
@@ -37,9 +33,7 @@ public class CommentController {
     public ResponseEntity<CommentResponse> createComment(
             @AuthenticationPrincipal UserDetails user,
             @RequestBody CreateCommentRequest request) {
-        AppUser appUser = appUserService.findByUsername(user.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("Utente non trovato"));
-        UserRome userRome = userRomeServ.findByAppUserId(appUser.getId());
+        UserRome userRome = userRomeServ.findByUsername(user.getUsername());
         CommentResponse response = optimisticRetryServ.withRetry(() -> commentServ.createComment(userRome, request));
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -48,9 +42,7 @@ public class CommentController {
     public ResponseEntity<List<CategoryProgressResponse>> deleteComment(
             @AuthenticationPrincipal UserDetails user,
             @PathVariable UUID commentId) {
-        AppUser appUser = appUserService.findByUsername(user.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("Utente non trovato"));
-        UserRome userRome = userRomeServ.findByAppUserId(appUser.getId());
+        UserRome userRome = userRomeServ.findByUsername(user.getUsername());
         return ResponseEntity.ok(optimisticRetryServ.withRetry(() -> commentServ.deleteComment(userRome, commentId)));
     }
 }

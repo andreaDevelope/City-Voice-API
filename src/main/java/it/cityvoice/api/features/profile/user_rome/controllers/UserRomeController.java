@@ -25,11 +25,9 @@ public class UserRomeController {
 
     @GetMapping("/me")
     public ResponseEntity<UserProfileResponse> getMyProfile(@AuthenticationPrincipal UserDetails user) {
-                AppUser appUser = appUserService.findByUsername(user.getUsername())
-                                .orElseThrow(() -> new ResourceNotFoundException("Utente non trovato"));
-               UserRome userRome = userRomeServ.findByAppUserId(appUser.getId());
+                UserRome userRome = userRomeServ.findByUsername(user.getUsername());
                 UserProfileResponse response = new UserProfileResponse(
-                                appUser.getUsername(),
+                                user.getUsername(),
                                 userRome.getSymbol(),
                                 userRome.getColor(),
                                 userRome.getNeighborhood()

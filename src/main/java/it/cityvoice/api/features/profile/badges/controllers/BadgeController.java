@@ -1,13 +1,10 @@
 package it.cityvoice.api.features.profile.badges.controllers;
 
-import it.cityvoice.api.features.auth.entity.AppUser;
-import it.cityvoice.api.features.auth.services.AppUserService;
 import it.cityvoice.api.features.profile.badges.dto.CategoryProgressResponse;
 import it.cityvoice.api.features.profile.badges.services.BadgeServ;
 import it.cityvoice.api.features.profile.categories.services.CategoryServ;
 import it.cityvoice.api.features.profile.user_rome.entity.UserRome;
 import it.cityvoice.api.features.profile.user_rome.services.UserRomeServ;
-import it.cityvoice.api.shared.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,15 +22,12 @@ import java.util.List;
 @PreAuthorize("isAuthenticated()")
 public class BadgeController {
     private final BadgeServ badgeServ;
-    private final AppUserService appUserService;
     private final UserRomeServ  userRomeServ;
     private final CategoryServ categoryServ;
 
     @GetMapping("/progress")
     public ResponseEntity<List<CategoryProgressResponse>> getMyProgress(@AuthenticationPrincipal UserDetails user) {
-        AppUser appUser = appUserService.findByUsername(user.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("Utente non trovato"));
-        UserRome userRome = userRomeServ.findByAppUserId(appUser.getId());
+        UserRome userRome = userRomeServ.findByUsername(user.getUsername());
 
         List<CategoryProgressResponse> progress = categoryServ.getAllCategories().stream()
                 .map(category -> badgeServ.getProgressForUser(userRome, category.getName()))
