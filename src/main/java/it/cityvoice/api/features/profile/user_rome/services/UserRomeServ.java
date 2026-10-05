@@ -42,6 +42,13 @@ public class UserRomeServ {
     }
 
     @Transactional
+    public UserRome findByUsername(String username) {
+        UserRome userRome = userRepo.findByAppUserUsername(username);
+        trackDailyAccess(userRome);
+        return userRome;
+    }
+
+    @Transactional
     public void registerDailyAccess(Long appUserId) {
         findByAppUserId(appUserId);
     }

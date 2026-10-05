@@ -17,4 +17,10 @@ public interface UserRomeRepo extends JpaRepository<UserRome, Long> {
     @Modifying
     @Query("UPDATE UserRome u SET u.continuityCounter = 0")
     int resetAllContinuityCounters();
+
+    Optional<UserRome> findOptionalByAppUserUsername(String username);
+    default UserRome findByAppUserUsername(String username) {
+        return findOptionalByAppUserUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("Utente non trovato"));
+    }
 }
