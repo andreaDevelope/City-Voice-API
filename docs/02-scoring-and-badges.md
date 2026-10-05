@@ -84,6 +84,12 @@ The real protection is two **partial unique indexes** defined in `schema.sql`, o
 
 `depth` is persisted on the entity and computed from the parent (`parent.depth + 1`) rather than by walking up the chain: the story bonus is decided in constant time, with no recursive queries, at any nesting level.
 
+### Featured badges
+
+A user can feature up to 3 unlocked badges. `featuredPosition` is 1, 2 or 3, or `null` when the badge is not featured. A unique index on `(user_rome_id, featured_position)` prevents two badges in the same position; `null` values never collide.
+
+`PUT /badge/featured` replaces the whole selection: it clears every position with a bulk update, then assigns the new ones. The bulk update clears the persistence context (`clearAutomatically`): without it, a badge that keeps the same position would not be rewritten and would stay `null`.
+
 ## Entity-relationship diagram
 
 ```mermaid
@@ -183,7 +189,7 @@ erDiagram
         Long user_rome_id FK
         Long badge_id FK
         Instant unlockedAt
-        boolean featured
+        Integer featuredPosition
     }
 ```
 

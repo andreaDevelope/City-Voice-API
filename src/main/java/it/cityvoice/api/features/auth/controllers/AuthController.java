@@ -1,6 +1,6 @@
 package it.cityvoice.api.features.auth.controllers;
 
-import jakarta.persistence.EntityNotFoundException;
+import it.cityvoice.api.shared.exceptions.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -65,7 +65,7 @@ public class AuthController {
             return ResponseEntity.status(401).build();
         }
 
-        AppUser appUser = appUserService.findByUsername(user.getUsername()).orElseThrow(() -> new EntityNotFoundException("User not found"));
+        AppUser appUser = appUserService.findByUsername(user.getUsername()).orElseThrow(() -> new ResourceNotFoundException("Utente non trovato"));
         return ResponseEntity.ok(new AuthUserResponse(
                 appUser.getUsername(),
                 appUser.getRoles()

@@ -7,7 +7,7 @@ import it.cityvoice.api.features.profile.user_badge.entity.UserBadge;
 import it.cityvoice.api.features.profile.user_badge.repositories.UserBadgeRepo;
 import it.cityvoice.api.features.profile.user_rome.entity.UserRome;
 import it.cityvoice.api.shared.exceptions.BadRequestException;
-import jakarta.persistence.EntityNotFoundException;
+import it.cityvoice.api.shared.exceptions.ResourceNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -33,7 +33,7 @@ public class UserBadgeService {
     }
 
     public UserBadge getBadgeById(Long id) {
-        return userBadgeRepo.findById(id).orElseThrow(EntityNotFoundException::new);
+        return userBadgeRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Badge non trovato"));
     }
 
     public UserBadge unlock(UserRome userRome, Badge badge) {

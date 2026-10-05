@@ -2,7 +2,7 @@ package it.cityvoice.api.features.profile.categories.services;
 
 import it.cityvoice.api.features.profile.categories.entity.Category;
 import it.cityvoice.api.features.profile.categories.repositories.CategoryRepo;
-import jakarta.persistence.EntityNotFoundException;
+import it.cityvoice.api.shared.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +18,6 @@ public class CategoryServ {
     }
 
     public Category getCategoryByName(String categoryName){
-        return categoryRepo.findByName(categoryName).orElseThrow(()-> new EntityNotFoundException("Category not found"));
+        return categoryRepo.findByName(categoryName).orElseThrow(()-> new ResourceNotFoundException("Categoria non trovata"));
     }
 }

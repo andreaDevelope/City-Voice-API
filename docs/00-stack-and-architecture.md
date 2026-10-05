@@ -49,6 +49,8 @@ During development `SecurityConfig` lets every request through at filter level (
 | GET | `/profile/me` | yes | Returns the profile and visual identity |
 | PUT | `/profile/visual-identity` | yes | Updates symbol and colour |
 | GET | `/badge/progress` | yes | Badge progress for all four categories |
+| GET | `/badge/unlocked` | yes | Badges unlocked by the user, with their featured position |
+| PUT | `/badge/featured` | yes | Sets the featured badges (max 3); list order is the position |
 | POST | `/stories` | yes | Submits a story, returns updated badge progress |
 | DELETE | `/stories/{storyId}` | yes | Deletes one of the author's stories, returns updated badge progress |
 | POST | `/comments` | yes | Posts a comment or a reply |
