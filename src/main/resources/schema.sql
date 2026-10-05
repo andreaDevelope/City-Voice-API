@@ -9,3 +9,6 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_reaction_on_story
 CREATE UNIQUE INDEX IF NOT EXISTS uq_reaction_on_comment
     ON reactions (user_rome_id, comment_id)
     WHERE story_id IS NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_user_badge_featured_position
+    ON user_badges (user_rome_id, featured_position);

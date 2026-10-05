@@ -10,7 +10,7 @@ import java.time.Instant;
 @Entity
 @Table(
         name = "user_badges",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"user_rome_id", "badge_id"})
+        uniqueConstraints = @UniqueConstraint(name = "uq_user_badge_user_rome_badge", columnNames = {"user_rome_id", "badge_id"})
 )
 @Data
 public class UserBadge {

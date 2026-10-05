@@ -25,6 +25,11 @@ public class AppUser {
     private String recoveryKeyHash;
 
     @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "app_user_roles",
+            joinColumns = @JoinColumn(name = "app_user_id"),
+            uniqueConstraints = @UniqueConstraint(name = "uq_app_user_role", columnNames = {"app_user_id", "roles"})
+    )
     @Enumerated(EnumType.STRING)
     private Set<Role> roles;
 

@@ -14,11 +14,11 @@ import java.time.Instant;
  // il vincolo @UniqueConstraint sotto non basta da solo
  // La protezione reale è un indice unico parziale
  // definito manualmente in schema.sql (non generabile da Hibernate/JPA). Non rimuovere questo constraint.
- // Dettagli: docs/00-stack-and-architecture.md#reaction-uniqueness
+ // Dettagli: docs/02-scoring-and-badges.md#reaction-uniqueness
 
 @Table(
         name = "reactions",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"user_rome_id", "story_id", "comment_id"}),
+        uniqueConstraints = @UniqueConstraint(name = "uq_reaction_user_target", columnNames = {"user_rome_id", "story_id", "comment_id"}),
         indexes = {
                 @Index(name = "idx_reaction_story", columnList = "story_id"),
                 @Index(name = "idx_reaction_comment", columnList = "comment_id")
@@ -36,7 +36,7 @@ public class Reaction {
     private UserRome userRome;
 
     // story e comment: esattamente uno dei due deve essere valorizzato (mai entrambi, mai nessuno)
-    // Dettagli: docs/00-stack-and-architecture.md#reaction-uniqueness
+    // Dettagli: docs/02-scoring-and-badges.md#reaction-uniqueness
     @ManyToOne
     @JoinColumn(name = "story_id")
     private Story story;
