@@ -10,9 +10,9 @@ Rewards content creation: story +1, comment +1. No deduplication, no floor.
 
 ### Neighborhood
 
-Number of distinct *municipi* where the user has active content, computed as the union of the municipi of the stories they wrote and of the stories they commented on. Reactions do not contribute. Recomputed with a query on every action rather than incremented: three stories in the same municipio count as 1.
+Number of distinct *municipi* where the user has active content, computed as the union of the municipi of the stories they wrote and of the stories they commented on. Reactions do not contribute. Recomputed with a query on every action rather than incremented: three stories in the same municipio count as 1. Stories of type `STORY` have no district: they do not count, and neither do the comments written under them.
 
-Each story is tied to a district and each district to a municipio, see [Districts](03-districts.md).
+Each report is tied to a district and each district to a municipio; stories have no district, see [Districts](03-districts.md).
 
 ### Continuity
 
@@ -96,7 +96,7 @@ A user can feature up to 3 unlocked badges. `featuredPosition` is 1, 2 or 3, or 
 erDiagram
     APP_USER ||--|| USER_ROME : "has identity"
     USER_ROME ||--o{ STORY : "writes"
-    DISTRICT ||--o{ STORY : "located in"
+    DISTRICT |o--o{ STORY : "located in"
     USER_ROME ||--o{ COMMENT : "writes"
     USER_ROME ||--o{ REACTION : "reacts"
     USER_ROME ||--o{ USER_BADGE : "unlocks"
@@ -138,6 +138,7 @@ erDiagram
     STORY {
         UUID id PK
         Long user_rome_id FK
+        String type
         String category
         Long district_id FK
         String title
@@ -192,5 +193,4 @@ erDiagram
         Integer featuredPosition
     }
 ```
-
-Nullable foreign keys not expressible in the diagram notation: `REACTION.story_id` and `REACTION.comment_id` (exactly one populated, see [Reaction uniqueness](#reaction-uniqueness)), and `COMMENT.parent_comment_id` (null for top-level comments).
+Nullable foreign keys not expressible in the diagram notation: `REACTION.story_id` and `REACTION.comment_id` (exactly one populated, see [Reaction uniqueness](#reaction-uniqueness)), `COMMENT.parent_comment_id` (null for top-level comments), and `STORY.district_id`. `STORY.category` and `STORY.district_id` are null for type `STORY` and required for type `REPORT`; the rule is validated in `CreateStoryRequest`.

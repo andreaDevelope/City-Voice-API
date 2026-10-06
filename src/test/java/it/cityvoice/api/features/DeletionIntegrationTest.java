@@ -9,6 +9,7 @@ import it.cityvoice.api.features.reactions.dto.ReactToContentRequest;
 import it.cityvoice.api.features.reactions.enums.ReactionType;
 import it.cityvoice.api.features.reactions.repositories.ReactionRepo;
 import it.cityvoice.api.features.stories.dto.CreateStoryRequest;
+import it.cityvoice.api.features.stories.enums.StoryType;
 import it.cityvoice.api.features.stories.repositories.StoryRepo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -57,7 +58,7 @@ class DeletionIntegrationTest extends IntegrationTestBase {
 
     private UUID postStory(TestUser author) throws Exception {
         CreateStoryRequest request = new CreateStoryRequest(
-                "decoro", 13L, FAKER.lorem().sentence(3),
+                StoryType.REPORT, "decoro", 13L, FAKER.lorem().sentence(3),
                 FAKER.lorem().sentence(5), FAKER.lorem().paragraph());
         String body = mockMvc.perform(post("/api/cityvoice/stories")
                         .with(user(author.username()))

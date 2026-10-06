@@ -8,6 +8,7 @@ import it.cityvoice.api.features.districts.repositories.DistrictRepo;
 import it.cityvoice.api.features.profile.user_rome.entity.UserRome;
 import it.cityvoice.api.features.profile.user_rome.repositories.UserRomeRepo;
 import it.cityvoice.api.features.stories.entity.Story;
+import it.cityvoice.api.features.stories.enums.StoryType;
 import it.cityvoice.api.features.stories.repositories.StoryRepo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -53,6 +54,7 @@ class CommentIntegrationTest extends IntegrationTestBase {
         // storia creata a DB: il flusso di submit è già coperto da StoryIntegrationTest
         Story story = new Story();
         story.setUserRome(userRomeRepo.findByAppUserId(storyOwner.appUserId()));
+        story.setType(StoryType.REPORT);
         story.setCategory("decoro");
         story.setDistrict(districtRepo.getReferenceById(13L));
         story.setTitle(FAKER.lorem().sentence(3));

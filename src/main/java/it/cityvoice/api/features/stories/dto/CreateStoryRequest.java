@@ -1,13 +1,15 @@
 package it.cityvoice.api.features.stories.dto;
 
 
+import it.cityvoice.api.features.stories.enums.StoryType;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record CreateStoryRequest(
-        @NotBlank(message = "il campo Categoria non può essere vuoto")
+        @NotNull(message = "Tipo obbligatorio")
+        StoryType type,
         String category,
-        @NotNull(message = "il campo Quartiere non può essere vuoto")
         Long districtId,
         @NotBlank(message = "il campo Titolo non può essere vuoto")
         String title,
@@ -15,4 +17,15 @@ public record CreateStoryRequest(
         String description,
         @NotBlank(message = "il campo Testo non può essere vuoto")
         String storyContent
-) {}
+) {
+        @AssertTrue(message = "Categoria e quartiere obbligatori per le segnalazioni, assenti per le storie")
+        public boolean isFieldsConsistentWithType() {
+                if (type == null) {
+                        return true;
+                }
+                return switch (type) {
+                        case REPORT -> category != null && !category.isBlank() && districtId != null;
+                        case STORY -> category == null && districtId == null;
+                };
+        }
+}

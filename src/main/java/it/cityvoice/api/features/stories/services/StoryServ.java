@@ -54,8 +54,11 @@ public class StoryServ {
     public StoryResponse submitStory(UserRome userRome, @Valid CreateStoryRequest request) {
         Story story = new Story();
         story.setUserRome(userRome);
+        story.setType(request.type());
         story.setCategory(request.category());
-        story.setDistrict(districtServ.getById(request.districtId()));
+        if (request.districtId() != null) {
+            story.setDistrict(districtServ.getById(request.districtId()));
+        }
         story.setTitle(request.title());
         story.setDescription(request.description());
         story.setStoryContent(request.storyContent());

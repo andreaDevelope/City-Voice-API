@@ -51,7 +51,7 @@ Tests extend `IntegrationTestBase` and call the endpoints through MockMvc, authe
 
 ## Schema
 
-`spring.jpa.hibernate.ddl-auto=update` — Hibernate applies additive changes to the schema at startup and preserves existing data, including seeded badges and categories. `update` never drops columns or tables, and cannot add a `NOT NULL` column to a table that already has rows: those changes require a manual SQL statement.
+`spring.jpa.hibernate.ddl-auto=update` — Hibernate applies additive changes to the schema at startup and preserves existing data, including seeded badges and categories. `update` never drops columns or tables, cannot add a `NOT NULL` column to a table that already has rows, and cannot remove an existing `NOT NULL` constraint: those changes require a manual SQL statement.
 
 `schema.sql` runs after Hibernate (`spring.jpa.defer-datasource-initialization=true`) and creates the partial unique indexes that JPA cannot express. It is idempotent and runs on every startup.
 

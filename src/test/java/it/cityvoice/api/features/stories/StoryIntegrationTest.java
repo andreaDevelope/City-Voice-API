@@ -7,6 +7,7 @@ import it.cityvoice.api.features.auth.services.AppUserService;
 import it.cityvoice.api.features.profile.user_rome.entity.UserRome;
 import it.cityvoice.api.features.profile.user_rome.repositories.UserRomeRepo;
 import it.cityvoice.api.features.stories.dto.CreateStoryRequest;
+import it.cityvoice.api.features.stories.enums.StoryType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -46,7 +47,7 @@ class StoryIntegrationTest extends IntegrationTestBase {
     @DisplayName("l'invio di una storia incrementa activity e neighborhood")
     void submitStoryIncrementsCounters() throws Exception {
         CreateStoryRequest request = new CreateStoryRequest(
-                "decoro", 13L, "Cassonetti pieni",
+                StoryType.REPORT, "decoro", 13L, "Cassonetti pieni",
                 "Rifiuti a terra da giorni", "Sono pieni da una settimana");
 
         mockMvc.perform(post("/api/cityvoice/stories")
@@ -68,9 +69,9 @@ class StoryIntegrationTest extends IntegrationTestBase {
     void sameMunicipioCountsOnce() throws Exception {
         // Monti e Trastevere stanno entrambi nel Municipio I
         CreateStoryRequest first = new CreateStoryRequest(
-                "decoro", 1L, "Prima", "Descrizione", "Contenuto");
+                StoryType.REPORT, "decoro", 1L, "Prima", "Descrizione", "Contenuto");
         CreateStoryRequest second = new CreateStoryRequest(
-                "sicurezza", 13L, "Seconda", "Descrizione", "Contenuto");
+                StoryType.REPORT, "sicurezza", 13L, "Seconda", "Descrizione", "Contenuto");
 
         mockMvc.perform(post("/api/cityvoice/stories")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -90,9 +91,9 @@ class StoryIntegrationTest extends IntegrationTestBase {
     void differentMunicipiCountTwice() throws Exception {
         // Trastevere (Municipio I) e Garbatella (Municipio VIII)
         CreateStoryRequest first = new CreateStoryRequest(
-                "decoro", 13L, "Prima", "Descrizione", "Contenuto");
+                StoryType.REPORT, "decoro", 13L, "Prima", "Descrizione", "Contenuto");
         CreateStoryRequest second = new CreateStoryRequest(
-                "sicurezza", 176L, "Seconda", "Descrizione", "Contenuto");
+                StoryType.REPORT, "sicurezza", 176L, "Seconda", "Descrizione", "Contenuto");
 
         mockMvc.perform(post("/api/cityvoice/stories")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -103,5 +104,25 @@ class StoryIntegrationTest extends IntegrationTestBase {
 
         UserRome author = userRomeRepo.findByAppUserId(authorAppUserId);
         assertEquals(2, author.getNeighborhoodCounter());
+    }
+
+    @Test
+    @WithMockUser(username = "autore")
+    @DisplayName("una storia senza quartiere incrementa activity ma non neighborhood")
+    void storyWithoutDistrictDoesNotCountForNeighborhood() throws Exception {
+        CreateStoryRequest request = new CreateStoryRequest(
+                StoryType.STORY, null, null, "Titolo", "Descrizione", "Contenuto");
+
+        mockMvc.perform(post("/api/cityvoice/stories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.type").value("STORY"))
+                .andExpect(jsonPath("$.category").isEmpty())
+                .andExpect(jsonPath("$.district").isEmpty());
+
+        UserRome author = userRomeRepo.findByAppUserId(authorAppUserId);
+        assertEquals(1, author.getActivityCounter());
+        assertEquals(0, author.getNeighborhoodCounter());
     }
 }

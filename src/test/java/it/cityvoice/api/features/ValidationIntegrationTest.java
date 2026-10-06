@@ -5,6 +5,7 @@ import it.cityvoice.api.features.comments.dto.CreateCommentRequest;
 import it.cityvoice.api.features.reactions.dto.ReactToContentRequest;
 import it.cityvoice.api.features.reactions.enums.ReactionType;
 import it.cityvoice.api.features.stories.dto.CreateStoryRequest;
+import it.cityvoice.api.features.stories.enums.StoryType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -36,7 +37,7 @@ class ValidationIntegrationTest extends IntegrationTestBase {
 
     private UUID postStory(TestUser author) throws Exception {
         CreateStoryRequest request = new CreateStoryRequest(
-                "decoro", 13L, FAKER.lorem().sentence(3),
+                StoryType.REPORT, "decoro", 13L, FAKER.lorem().sentence(3),
                 FAKER.lorem().sentence(5), FAKER.lorem().paragraph());
         String body = mockMvc.perform(post("/api/cityvoice/stories")
                         .with(user(author.username()))
@@ -152,11 +153,50 @@ class ValidationIntegrationTest extends IntegrationTestBase {
     void anonymousSubmissionIsRejected() throws Exception {
         // nessun .with(user(...)): richiesta anonima
         CreateStoryRequest request = new CreateStoryRequest(
-                "decoro", 13L, "Titolo", "Descrizione", "Contenuto");
+                StoryType.REPORT, "decoro", 13L, "Titolo", "Descrizione", "Contenuto");
 
         mockMvc.perform(post("/api/cityvoice/stories")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("una segnalazione senza quartiere viene rifiutata")
+    void reportWithoutDistrictIsRejected() throws Exception {
+        CreateStoryRequest request = new CreateStoryRequest(
+                StoryType.REPORT, "decoro", null, "Titolo", "Descrizione", "Contenuto");
+
+        mockMvc.perform(post("/api/cityvoice/stories")
+                        .with(user(owner.username()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("una storia con quartiere viene rifiutata")
+    void storyWithDistrictIsRejected() throws Exception {
+        CreateStoryRequest request = new CreateStoryRequest(
+                StoryType.STORY, null, 13L, "Titolo", "Descrizione", "Contenuto");
+
+        mockMvc.perform(post("/api/cityvoice/stories")
+                        .with(user(owner.username()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("un contenuto senza tipo viene rifiutato")
+    void submissionWithoutTypeIsRejected() throws Exception {
+        CreateStoryRequest request = new CreateStoryRequest(
+                null, "decoro", 13L, "Titolo", "Descrizione", "Contenuto");
+
+        mockMvc.perform(post("/api/cityvoice/stories")
+                        .with(user(owner.username()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
     }
 }

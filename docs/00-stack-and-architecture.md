@@ -19,7 +19,7 @@
     └── features/
         ├── auth/             # registration, login, recovery, JWT
         ├── comments/
-        ├── districts/        # Rome districts, public list for the story form
+        ├── districts/        # Rome districts, public list for the report form
         ├── impact/           # shared impact scoring service
         ├── profile/
         │   ├── badges/
@@ -39,24 +39,24 @@ All paths are prefixed with `/api/cityvoice`. Authenticated controllers carry cl
 
 During development `SecurityConfig` lets every request through at filter level (`anyRequest().permitAll()`), so access control relies entirely on `@PreAuthorize`. It must be restricted before deployment.
 
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| POST | `/auth/register` | no | Creates a user, returns the recovery key |
-| POST | `/auth/login` | no | Authenticates, sets the JWT cookie |
-| POST | `/auth/recovery` | no | Resets the password using the recovery key |
-| GET | `/auth/me` | yes | Returns the authenticated user |
-| POST | `/auth/refresh-token` | yes | Refreshes the JWT |
-| GET | `/profile/me` | yes | Returns the profile and visual identity |
-| PUT | `/profile/visual-identity` | yes | Updates symbol and colour |
-| GET | `/badge/progress` | yes | Badge progress for all four categories |
-| GET | `/badge/unlocked` | yes | Badges unlocked by the user, with their featured position |
-| PUT | `/badge/featured` | yes | Sets the featured badges (max 3); list order is the position |
-| POST | `/stories` | yes | Submits a story, returns updated badge progress |
-| DELETE | `/stories/{storyId}` | yes | Deletes one of the author's stories, returns updated badge progress |
-| POST | `/comments` | yes | Posts a comment or a reply |
+| Method | Path | Auth | Description                                                                          |
+|---|---|---|--------------------------------------------------------------------------------------|
+| POST | `/auth/register` | no | Creates a user, returns the recovery key                                             |
+| POST | `/auth/login` | no | Authenticates, sets the JWT cookie                                                   |
+| POST | `/auth/recovery` | no | Resets the password using the recovery key                                           |
+| GET | `/auth/me` | yes | Returns the authenticated user                                                       |
+| POST | `/auth/refresh-token` | yes | Refreshes the JWT                                                                    |
+| GET | `/profile/me` | yes | Returns the profile and visual identity                                              |
+| PUT | `/profile/visual-identity` | yes | Updates symbol and colour                                                            |
+| GET | `/badge/progress` | yes | Badge progress for all four categories                                               |
+| GET | `/badge/unlocked` | yes | Badges unlocked by the user, with their featured position                            |
+| PUT | `/badge/featured` | yes | Sets the featured badges (max 3); list order is the position                         |
+| POST | `/stories` | yes | Submits a story (`STORY`) or a report (`REPORT`), returns updated badge progress     |
+| DELETE | `/stories/{storyId}` | yes | Deletes one of the author's stories, returns updated badge progress                  |
+| POST | `/comments` | yes | Posts a comment or a reply                                                           |
 | DELETE | `/comments/{commentId}` | yes | Deletes one of the author's comments and its replies, returns updated badge progress |
-| POST | `/reactions` | yes | Adds, switches or removes a reaction (toggle) |
-| GET | `/public/districts` | no | Districts grouped by municipio, for the story form |
+| POST | `/reactions` | yes | Adds, switches or removes a reaction (toggle)                                        |
+| GET | `/public/districts` | no | Districts grouped by municipio, for the report form |                                  |
 
 `POST /reactions` handles three cases in one endpoint: no prior reaction creates one, the same type removes it, a different type switches the vote. It returns 200 rather than 201 because it does not always create a resource.
 
