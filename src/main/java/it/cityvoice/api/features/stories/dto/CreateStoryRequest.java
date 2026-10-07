@@ -13,9 +13,7 @@ public record CreateStoryRequest(
         Long districtId,
         @NotBlank(message = "il campo Titolo non può essere vuoto")
         String title,
-        @NotBlank(message = "il campo Descrizione non può essere vuoto")
         String description,
-        @NotBlank(message = "il campo Testo non può essere vuoto")
         String storyContent
 ) {
         @AssertTrue(message = "Categoria e quartiere obbligatori per le segnalazioni, assenti per le storie")
@@ -26,6 +24,19 @@ public record CreateStoryRequest(
                 return switch (type) {
                         case REPORT -> category != null && !category.isBlank() && districtId != null;
                         case STORY -> category == null && districtId == null;
+                };
+        }
+
+        @AssertTrue(message = "Le storie richiedono descrizione e testo, le segnalazioni almeno uno dei due")
+        public boolean isContentPresent() {
+                if (type == null) {
+                        return true;
+                }
+                boolean hasDescription = description != null && !description.isBlank();
+                boolean hasContent = storyContent != null && !storyContent.isBlank();
+                return switch (type) {
+                        case STORY -> hasDescription && hasContent;
+                        case REPORT -> hasDescription || hasContent;
                 };
         }
 }

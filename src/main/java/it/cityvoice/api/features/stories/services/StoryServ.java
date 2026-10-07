@@ -60,8 +60,8 @@ public class StoryServ {
             story.setDistrict(districtServ.getById(request.districtId()));
         }
         story.setTitle(request.title());
-        story.setDescription(request.description());
-        story.setStoryContent(request.storyContent());
+        story.setDescription(blankToNull(request.description()));
+        story.setStoryContent(blankToNull(request.storyContent()));
         Story saved = storyRepo.save(story);
 
         userRome.setActivityCounter(userRome.getActivityCounter() + 1);
@@ -142,5 +142,9 @@ public class StoryServ {
         return categoryServ.getAllCategories().stream()
                 .map(category -> badgeServ.getProgressForUser(requester, category.getName()))
                 .toList();
+    }
+
+    private static String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value;
     }
 }

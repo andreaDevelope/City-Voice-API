@@ -199,4 +199,30 @@ class ValidationIntegrationTest extends IntegrationTestBase {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    @DisplayName("una segnalazione senza descrizione né testo viene rifiutata")
+    void reportWithoutAnyContentIsRejected() throws Exception {
+        CreateStoryRequest request = new CreateStoryRequest(
+                StoryType.REPORT, "decoro", 13L, "Titolo", null, "   ");
+
+        mockMvc.perform(post("/api/cityvoice/stories")
+                        .with(user(owner.username()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("una storia senza testo viene rifiutata")
+    void storyWithoutContentIsRejected() throws Exception {
+        CreateStoryRequest request = new CreateStoryRequest(
+                StoryType.STORY, null, null, "Titolo", "Descrizione", null);
+
+        mockMvc.perform(post("/api/cityvoice/stories")
+                        .with(user(owner.username()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
 }

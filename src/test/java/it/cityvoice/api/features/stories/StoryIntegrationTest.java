@@ -125,4 +125,19 @@ class StoryIntegrationTest extends IntegrationTestBase {
         assertEquals(1, author.getActivityCounter());
         assertEquals(0, author.getNeighborhoodCounter());
     }
+
+    @Test
+    @WithMockUser(username = "autore")
+    @DisplayName("una segnalazione con la sola descrizione viene pubblicata e il testo vuoto salvato come null")
+    void reportWithOnlyDescriptionIsAccepted() throws Exception {
+        CreateStoryRequest request = new CreateStoryRequest(
+                StoryType.REPORT, "decoro", 13L, "Titolo", "Descrizione", "   ");
+
+        mockMvc.perform(post("/api/cityvoice/stories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.description").value("Descrizione"))
+                .andExpect(jsonPath("$.storyContent").isEmpty());
+    }
 }
