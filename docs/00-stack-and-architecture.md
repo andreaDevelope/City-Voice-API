@@ -124,7 +124,7 @@ Response bodies are always JSON: `{"message": "..."}`.
 Validation runs in the service layer, not the controller. Controllers are
 pass-through: `@RequestBody` in, call the service, nothing else.
 
-DTOs carry `@NotBlank`/`@Size` constraints (username 3–14 chars, password 6–12
+DTOs carry `@NotBlank`/`@Size` constraints (username 3–14 chars, password 4–14
 chars). Services are annotated `@Validated` and take `@Valid` parameters, which
 makes Spring trigger validation on the method call and throw
 `ConstraintViolationException` on failure — the same exception already used

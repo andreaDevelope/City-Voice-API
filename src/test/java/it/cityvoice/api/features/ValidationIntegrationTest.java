@@ -1,6 +1,7 @@
 package it.cityvoice.api.features;
 
 import it.cityvoice.api.IntegrationTestBase;
+import it.cityvoice.api.features.auth.dto.RegisterRequest;
 import it.cityvoice.api.features.comments.dto.CreateCommentRequest;
 import it.cityvoice.api.features.reactions.dto.ReactToContentRequest;
 import it.cityvoice.api.features.reactions.enums.ReactionType;
@@ -224,5 +225,40 @@ class ValidationIntegrationTest extends IntegrationTestBase {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
+    }
+
+    // richiesta di registrazione con username casuale e la password indicata
+    private RegisterRequest registerRequest(String password) {
+        RegisterRequest request = new RegisterRequest();
+        request.setUsername("reg" + FAKER.number().numberBetween(100000, 999999));
+        request.setPassword(password);
+        return request;
+    }
+
+    @Test
+    @DisplayName("una password di 3 caratteri viene rifiutata in registrazione")
+    void registrationWithTooShortPasswordIsRejected() throws Exception {
+        mockMvc.perform(post("/api/cityvoice/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(registerRequest("abc"))))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("una password di 15 caratteri viene rifiutata in registrazione")
+    void registrationWithTooLongPasswordIsRejected() throws Exception {
+        mockMvc.perform(post("/api/cityvoice/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(registerRequest("a".repeat(15)))))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("una password di 4 caratteri è accettata in registrazione")
+    void registrationWithMinimumPasswordSucceeds() throws Exception {
+        mockMvc.perform(post("/api/cityvoice/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(registerRequest("abcd"))))
+                .andExpect(status().isOk());
     }
 }
