@@ -25,4 +25,10 @@ public interface UserBadgeRepo extends JpaRepository<UserBadge, Long> {
      @Modifying(flushAutomatically = true, clearAutomatically = true)
      @Query("UPDATE UserBadge ub SET ub.featuredPosition = null WHERE ub.userRome = :userRome")
      void clearFeaturedPositions(@Param("userRome") UserRome userRome);
+
+     // badge in evidenza di più autori in blocco, con badge e categoria già caricati
+     @Query("SELECT ub FROM UserBadge ub JOIN FETCH ub.badge b JOIN FETCH b.category " +
+             "WHERE ub.userRome.id IN :userRomeIds AND ub.featuredPosition IS NOT NULL " +
+             "ORDER BY ub.featuredPosition ASC")
+     List<UserBadge> findFeaturedByUserRomeIdIn(@Param("userRomeIds") Collection<Long> userRomeIds);
 }

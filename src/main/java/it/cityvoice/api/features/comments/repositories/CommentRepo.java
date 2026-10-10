@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,4 +23,13 @@ public interface CommentRepo extends JpaRepository<Comment, UUID> {
     List<Comment> findByParentComment(Comment parentComment);
 
     List<Comment> findByStory(Story story);
+
+    // numero di commenti per storia, a qualsiasi profondità
+    @Query("SELECT c.story.id AS storyId, COUNT(c) AS count FROM Comment c WHERE c.story.id IN :storyIds GROUP BY c.story.id")
+    List<CommentCountProjection> countByStoryIdIn(@Param("storyIds") Collection<UUID> storyIds);
+
+    interface CommentCountProjection {
+        UUID getStoryId();
+        long getCount();
+    }
 }
