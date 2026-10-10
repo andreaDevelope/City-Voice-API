@@ -9,7 +9,10 @@ import it.cityvoice.api.features.profile.user_rome.repositories.UserRomeRepo;
 import it.cityvoice.api.features.reactions.dto.ReactToContentRequest;
 import it.cityvoice.api.features.reactions.enums.ReactionType;
 import it.cityvoice.api.features.stories.dto.CreateStoryRequest;
+import it.cityvoice.api.features.stories.entity.Story;
+import it.cityvoice.api.features.stories.enums.StoryStatus;
 import it.cityvoice.api.features.stories.enums.StoryType;
+import it.cityvoice.api.features.stories.repositories.StoryRepo;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +36,9 @@ class PublicStoryIntegrationTest extends IntegrationTestBase {
 
     @Autowired
     private UserBadgeRepo userBadgeRepo;
+
+    @Autowired
+    private StoryRepo storyRepo;
 
     private UUID postStory(TestUser author, StoryType type, String category, Long districtId,
                             String title, String description, String storyContent) throws Exception {
@@ -229,5 +235,55 @@ class PublicStoryIntegrationTest extends IntegrationTestBase {
         mockMvc.perform(get("/api/cityvoice/public/stories").param("q", "Titolo preview"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items[0].preview").value("a".repeat(200) + "…"));
+    }
+
+    @Test
+    @DisplayName("i conteggi per categoria sono raggruppati e ordinati alfabeticamente")
+    void categoryCountsAreGroupedAndOrderedAlphabetically() throws Exception {
+        TestUser owner = registerUser();
+        postStory(owner, StoryType.REPORT, "decoro", 13L, "Decoro uno", "Descrizione", "Contenuto");
+        postStory(owner, StoryType.REPORT, "decoro", 13L, "Decoro due", "Descrizione", "Contenuto");
+        postStory(owner, StoryType.REPORT, "trasporti", 13L, "Trasporti uno", "Descrizione", "Contenuto");
+        postStory(owner, StoryType.STORY, null, null, "Storia libera categorie", "Descrizione", "Contenuto");
+
+        mockMvc.perform(get("/api/cityvoice/public/stories/categories"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].category").value("decoro"))
+                .andExpect(jsonPath("$[0].count").value(2))
+                .andExpect(jsonPath("$[1].category").value("trasporti"))
+                .andExpect(jsonPath("$[1].count").value(1));
+    }
+
+    @Test
+    @DisplayName("categorie con maiuscole diverse sono contate come una sola, in minuscolo")
+    void categoryCountsAreCaseInsensitive() throws Exception {
+        TestUser owner = registerUser();
+        postStory(owner, StoryType.REPORT, "Decoro", 13L, "Decoro maiuscolo", "Descrizione", "Contenuto");
+        postStory(owner, StoryType.REPORT, "decoro", 13L, "Decoro minuscolo", "Descrizione", "Contenuto");
+
+        mockMvc.perform(get("/api/cityvoice/public/stories/categories"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].category").value("decoro"))
+                .andExpect(jsonPath("$[0].count").value(2));
+    }
+
+    @Test
+    @DisplayName("una segnalazione non pubblicata non viene contata")
+    void unpublishedReportIsNotCounted() throws Exception {
+        TestUser owner = registerUser();
+        postStory(owner, StoryType.REPORT, "decoro", 13L, "Decoro pubblicato", "Descrizione", "Contenuto");
+        UUID unpublishedId = postStory(owner, StoryType.REPORT, "decoro", 13L, "Decoro non pubblicato", "Descrizione", "Contenuto");
+
+        Story unpublished = storyRepo.findById(unpublishedId).orElseThrow();
+        unpublished.setStatus(StoryStatus.BLOCKED);
+        storyRepo.save(unpublished);
+
+        mockMvc.perform(get("/api/cityvoice/public/stories/categories"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].category").value("decoro"))
+                .andExpect(jsonPath("$[0].count").value(1));
     }
 }

@@ -58,6 +58,7 @@ During development `SecurityConfig` lets every request through at filter level (
 | POST | `/reactions` | yes | Adds, switches or removes a reaction (toggle)                                        |
 | GET | `/public/districts` | no | Districts grouped by municipio, for the report form |
 | GET | `/public/stories` | no | Published stories and reports, newest first; `q` searches title, username, district and municipio, `category` filters reports; paginated |
+| GET | `/public/stories/categories` | no | Categories of published reports with their count, alphabetical |
 
 `POST /reactions` handles three cases in one endpoint: no prior reaction creates one, the same type removes it, a different type switches the vote. It returns 200 rather than 201 because it does not always create a resource.
 

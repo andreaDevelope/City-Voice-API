@@ -4,6 +4,7 @@ import it.cityvoice.api.features.districts.enums.Municipio;
 import it.cityvoice.api.features.profile.user_rome.entity.UserRome;
 import it.cityvoice.api.features.stories.entity.Story;
 import it.cityvoice.api.features.stories.enums.StoryStatus;
+import it.cityvoice.api.features.stories.enums.StoryType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -26,4 +27,15 @@ public interface StoryRepo extends JpaRepository<Story, UUID>, JpaSpecificationE
     @Override
     @EntityGraph(attributePaths = {"userRome", "userRome.appUser", "district"})
     Page<Story> findAll(Specification<Story> spec, Pageable pageable);
+
+    // conteggio delle categorie delle segnalazioni pubblicate, raggruppate case-insensitive
+    @Query("SELECT lower(s.category) AS category, COUNT(s) AS count FROM Story s " +
+            "WHERE s.status = :status AND s.type = :type AND s.category IS NOT NULL " +
+            "GROUP BY lower(s.category) ORDER BY lower(s.category) ASC")
+    List<CategoryCountProjection> countByCategory(@Param("status") StoryStatus status, @Param("type") StoryType type);
+
+    interface CategoryCountProjection {
+        String getCategory();
+        long getCount();
+    }
 }

@@ -1,5 +1,6 @@
 package it.cityvoice.api.features.stories.controllers;
 
+import it.cityvoice.api.features.stories.dto.CategoryCountResponse;
 import it.cityvoice.api.features.stories.dto.StoryCardResponse;
 import it.cityvoice.api.features.stories.services.StoryQueryServ;
 import it.cityvoice.api.shared.dto.PageResponse;
@@ -9,6 +10,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/cityvoice/public/stories")
@@ -24,5 +27,10 @@ public class PublicStoryController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         return ResponseEntity.ok(storyQueryServ.search(q, category, page, size));
+    }
+
+    @GetMapping("/categories")
+    public ResponseEntity<List<CategoryCountResponse>> categories() {
+        return ResponseEntity.ok(storyQueryServ.categoryCounts());
     }
 }

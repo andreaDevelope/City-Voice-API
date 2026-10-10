@@ -8,10 +8,13 @@ import it.cityvoice.api.features.profile.user_badge.repositories.UserBadgeRepo;
 import it.cityvoice.api.features.reactions.enums.ReactionType;
 import it.cityvoice.api.features.reactions.repositories.ReactionRepo;
 import it.cityvoice.api.features.reactions.repositories.ReactionRepo.ReactionCountProjection;
+import it.cityvoice.api.features.stories.dto.CategoryCountResponse;
 import it.cityvoice.api.features.stories.dto.FeaturedBadgeResponse;
 import it.cityvoice.api.features.stories.dto.StoryAuthorResponse;
 import it.cityvoice.api.features.stories.dto.StoryCardResponse;
 import it.cityvoice.api.features.stories.entity.Story;
+import it.cityvoice.api.features.stories.enums.StoryStatus;
+import it.cityvoice.api.features.stories.enums.StoryType;
 import it.cityvoice.api.features.stories.repositories.StoryRepo;
 import it.cityvoice.api.features.stories.specifications.StorySpecifications;
 import it.cityvoice.api.shared.dto.PageResponse;
@@ -82,6 +85,12 @@ public class StoryQueryServ {
                 .toList();
 
         return new PageResponse<>(items, resolvedPage, resolvedSize, result.hasNext());
+    }
+
+    public List<CategoryCountResponse> categoryCounts() {
+        return storyRepo.countByCategory(StoryStatus.PUBLISHED, StoryType.REPORT).stream()
+                .map(row -> new CategoryCountResponse(row.getCategory(), row.getCount()))
+                .toList();
     }
 
     private StoryCardResponse toCard(Story story,
