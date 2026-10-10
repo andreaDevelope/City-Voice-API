@@ -200,4 +200,4 @@ erDiagram
     }
 ```
 Nullable foreign keys not expressible in the diagram notation: `REACTION.story_id` and `REACTION.comment_id` (exactly one populated, see [Reaction uniqueness](#reaction-uniqueness)), `COMMENT.parent_comment_id` (null for top-level comments), and `STORY.district_id`. `STORY.category` and `STORY.district_id` are null for type `STORY` and required for type `REPORT`; the rule is validated in `CreateStoryRequest`.
-`STORY.description` and `STORY.storyContent` are nullable: both are required for type `STORY`, at least one for type `REPORT`. Whitespace-only values are stored as null.
+`STORY.description` and `STORY.storyContent` are nullable: at least one of them is required, for both types. Whitespace-only values are stored as null.

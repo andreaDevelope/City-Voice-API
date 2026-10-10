@@ -27,16 +27,13 @@ public record CreateStoryRequest(
                 };
         }
 
-        @AssertTrue(message = "Le storie richiedono descrizione e testo, le segnalazioni almeno uno dei due")
+        @AssertTrue(message = "Serve almeno una descrizione breve o il testo")
         public boolean isContentPresent() {
                 if (type == null) {
                         return true;
                 }
                 boolean hasDescription = description != null && !description.isBlank();
                 boolean hasContent = storyContent != null && !storyContent.isBlank();
-                return switch (type) {
-                        case STORY -> hasDescription && hasContent;
-                        case REPORT -> hasDescription || hasContent;
-                };
+                return hasDescription || hasContent;
         }
 }

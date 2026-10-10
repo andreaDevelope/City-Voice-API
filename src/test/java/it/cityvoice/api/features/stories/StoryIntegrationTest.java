@@ -143,6 +143,20 @@ class StoryIntegrationTest extends IntegrationTestBase {
 
     @Test
     @WithMockUser(username = "autore")
+    @DisplayName("una storia con la sola descrizione viene pubblicata e il testo vuoto salvato come null")
+    void storyWithOnlyDescriptionIsAccepted() throws Exception {
+        CreateStoryRequest request = new CreateStoryRequest(
+                StoryType.STORY, null, null, "Lampioni spenti", "Descrizione", null);
+
+        mockMvc.perform(post("/api/cityvoice/stories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.storyContent").isEmpty());
+    }
+
+    @Test
+    @WithMockUser(username = "autore")
     @DisplayName("un secondo contenuto con lo stesso titolo viene rifiutato")
     void duplicateTitleIsRejected() throws Exception {
         CreateStoryRequest first = new CreateStoryRequest(

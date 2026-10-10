@@ -215,10 +215,10 @@ class ValidationIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
-    @DisplayName("una storia senza testo viene rifiutata")
-    void storyWithoutContentIsRejected() throws Exception {
+    @DisplayName("una storia senza descrizione né testo viene rifiutata")
+    void storyWithoutAnyContentIsRejected() throws Exception {
         CreateStoryRequest request = new CreateStoryRequest(
-                StoryType.STORY, null, null, "Titolo", "Descrizione", null);
+                StoryType.STORY, null, null, "Titolo", null, "   ");
 
         mockMvc.perform(post("/api/cityvoice/stories")
                         .with(user(owner.username()))
