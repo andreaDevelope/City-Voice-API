@@ -12,3 +12,5 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_reaction_on_comment
 
 CREATE UNIQUE INDEX IF NOT EXISTS uq_user_badge_featured_position
     ON user_badges (user_rome_id, featured_position);
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_story_title ON stories (lower(trim(title)));

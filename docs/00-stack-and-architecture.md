@@ -110,11 +110,11 @@ expired token is handled by `JwtAuthenticationEntryPoint` instead.
 | Exception | Status |
 |---|---|
 | `ConstraintViolationException` | 400, body maps field to message |
-| `BadRequestException`, `IllegalArgumentException`, `DataIntegrityViolationException`, `MethodArgumentNotValidException`, `HttpMessageNotReadableException` | 400 |
+| `BadRequestException`, `IllegalArgumentException`, `MethodArgumentNotValidException`, `HttpMessageNotReadableException` | 400 |
 | `BadCredentialsException` | 401 |
 | `AccessDeniedException`, `UnauthorizedException` | 403 |
 | `ResourceNotFoundException` | 404 |
-| `ConflictException`, `OptimisticLockingFailureException` | 409 |
+| `ConflictException`, `OptimisticLockingFailureException`, `DataIntegrityViolationException` | 409 (integrity violations return a neutral message; details stay in the log) |
 | `InternalServerErrorException`, everything else | 500 |
 
 Response bodies are always JSON: `{"message": "..."}`.

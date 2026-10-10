@@ -140,4 +140,78 @@ class StoryIntegrationTest extends IntegrationTestBase {
                 .andExpect(jsonPath("$.description").value("Descrizione"))
                 .andExpect(jsonPath("$.storyContent").isEmpty());
     }
+
+    @Test
+    @WithMockUser(username = "autore")
+    @DisplayName("un secondo contenuto con lo stesso titolo viene rifiutato")
+    void duplicateTitleIsRejected() throws Exception {
+        CreateStoryRequest first = new CreateStoryRequest(
+                StoryType.REPORT, "decoro", 13L, "Buche in strada", "Descrizione", "Contenuto");
+        CreateStoryRequest second = new CreateStoryRequest(
+                StoryType.REPORT, "sicurezza", 13L, "Buche in strada", "Descrizione", "Contenuto");
+
+        mockMvc.perform(post("/api/cityvoice/stories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(first)))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post("/api/cityvoice/stories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(second)))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    @WithMockUser(username = "autore")
+    @DisplayName("titolo duplicato con maiuscole e spazi agli estremi diversi viene rifiutato")
+    void duplicateTitleCaseAndSpacesIsRejected() throws Exception {
+        CreateStoryRequest first = new CreateStoryRequest(
+                StoryType.REPORT, "decoro", 13L, "Buche", "Descrizione", "Contenuto");
+        CreateStoryRequest second = new CreateStoryRequest(
+                StoryType.REPORT, "sicurezza", 13L, "  bUCHE ", "Descrizione", "Contenuto");
+
+        mockMvc.perform(post("/api/cityvoice/stories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(first)))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post("/api/cityvoice/stories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(second)))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    @WithMockUser(username = "autore")
+    @DisplayName("lo stesso titolo tra una storia e una segnalazione viene rifiutato")
+    void duplicateTitleAcrossTypesIsRejected() throws Exception {
+        CreateStoryRequest story = new CreateStoryRequest(
+                StoryType.STORY, null, null, "Cassonetti pieni", "Descrizione", "Contenuto");
+        CreateStoryRequest report = new CreateStoryRequest(
+                StoryType.REPORT, "decoro", 13L, "Cassonetti pieni", "Descrizione", "Contenuto");
+
+        mockMvc.perform(post("/api/cityvoice/stories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(story)))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post("/api/cityvoice/stories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(report)))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    @WithMockUser(username = "autore")
+    @DisplayName("il titolo salvato viene trimmato")
+    void titleIsTrimmedOnSave() throws Exception {
+        CreateStoryRequest request = new CreateStoryRequest(
+                StoryType.REPORT, "decoro", 13L, "  Buche  ", "Descrizione", "Contenuto");
+
+        mockMvc.perform(post("/api/cityvoice/stories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.title").value("Buche"));
+    }
 }

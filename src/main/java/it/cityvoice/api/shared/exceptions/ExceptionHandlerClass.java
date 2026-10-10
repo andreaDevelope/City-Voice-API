@@ -59,13 +59,20 @@ public class ExceptionHandlerClass {
     // 400
     @ExceptionHandler({
             BadRequestException.class,
-            IllegalArgumentException.class,
-            DataIntegrityViolationException.class
+            IllegalArgumentException.class
     })
     public ResponseEntity<Map<String, String>> handleBadRequest(RuntimeException ex) {
         log.warn("Richiesta non valida", ex);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("message", ex.getMessage()));
+    }
+
+    // 409 - vincolo di integrità violato (es. unique index); il messaggio originale resta solo nel log
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, String>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        log.warn("Vincolo di integrità violato", ex);
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("message", "Operazione in conflitto con dati esistenti"));
     }
 
     // 401 - username o password sbagliati

@@ -19,6 +19,7 @@ import it.cityvoice.api.features.stories.dto.CreateStoryRequest;
 import it.cityvoice.api.features.stories.dto.StoryResponse;
 import it.cityvoice.api.features.stories.entity.Story;
 import it.cityvoice.api.features.stories.repositories.StoryRepo;
+import it.cityvoice.api.shared.exceptions.ConflictException;
 import it.cityvoice.api.shared.exceptions.ResourceNotFoundException;
 import it.cityvoice.api.shared.exceptions.UnauthorizedException;
 import jakarta.validation.Valid;
@@ -52,6 +53,10 @@ public class StoryServ {
 
     @Transactional
     public StoryResponse submitStory(UserRome userRome, @Valid CreateStoryRequest request) {
+        if (storyRepo.existsByNormalizedTitle(request.title())) {
+            throw new ConflictException("Esiste già un contenuto con questo titolo");
+        }
+
         Story story = new Story();
         story.setUserRome(userRome);
         story.setType(request.type());
@@ -59,7 +64,7 @@ public class StoryServ {
         if (request.districtId() != null) {
             story.setDistrict(districtServ.getById(request.districtId()));
         }
-        story.setTitle(request.title());
+        story.setTitle(request.title().trim());
         story.setDescription(blankToNull(request.description()));
         story.setStoryContent(blankToNull(request.storyContent()));
         Story saved = storyRepo.save(story);

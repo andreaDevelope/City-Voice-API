@@ -80,6 +80,12 @@ The real protection is two **partial unique indexes** defined in `schema.sql`, o
 
 `schema.sql` runs on every startup (`spring.sql.init.mode=always`), so the indexes use `IF NOT EXISTS`. It also requires `spring.jpa.defer-datasource-initialization=true`, otherwise the script would run before Hibernate has created the tables.
 
+### Story title uniqueness
+
+`Story.title` is unique across the whole platform, regardless of `type`: a STORY and a REPORT cannot share a title, nor can two REPORTs or two STORYs. The comparison is case-insensitive and ignores leading/trailing whitespace (`lower(trim(title))`), so `"Buche"` and `"  bUCHE "` collide.
+
+`StoryServ.submitStory` checks `StoryRepo.existsByNormalizedTitle` before saving and throws `ConflictException` (409) on a match; the title is also trimmed before being persisted. The real protection is a unique index on `lower(trim(title))` defined in `schema.sql`, since Hibernate cannot express a functional index — the application check is a best-effort fast path, not the source of truth.
+
 ### Comment depth
 
 `depth` is persisted on the entity and computed from the parent (`parent.depth + 1`) rather than by walking up the chain: the story bonus is decided in constant time, with no recursive queries, at any nesting level.
