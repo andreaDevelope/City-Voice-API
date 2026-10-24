@@ -57,8 +57,8 @@ During development `SecurityConfig` lets every request through at filter level (
 | DELETE | `/comments/{commentId}` | yes | Deletes one of the author's comments and its replies, returns updated badge progress |
 | POST | `/reactions` | yes | Adds, switches or removes a reaction (toggle)                                        |
 | GET | `/public/districts` | no | Districts grouped by municipio, for the report form |
-| GET | `/public/stories` | no | Published stories and reports, newest first; `q` searches title, username, district and municipio, `category` filters reports; paginated |
-| GET | `/public/stories/categories` | no | Categories of published reports with their count, alphabetical |
+| GET | `/public/stories` | no | Published stories and reports, newest first; `q` searches title, username, district and municipio, `category` filters reports by category (case-insensitive, unknown value → 400); paginated |
+| GET | `/public/stories/categories` | no | Every report category with its count of published reports, 0 included, in enum order |
 
 `POST /reactions` handles three cases in one endpoint: no prior reaction creates one, the same type removes it, a different type switches the vote. It returns 200 rather than 201 because it does not always create a resource.
 
@@ -126,7 +126,7 @@ Response bodies are always JSON: `{"message": "..."}`.
 Validation runs in the service layer, not the controller. Controllers are
 pass-through: `@RequestBody` in, call the service, nothing else.
 
-DTOs carry `@NotBlank`/`@Size` constraints (username 3–14 chars, password 4–14
+DTOs carry `@NotBlank`/`@Size` constraints (username 3–14 chars, password 6–14
 chars). Services are annotated `@Validated` and take `@Valid` parameters, which
 makes Spring trigger validation on the method call and throw
 `ConstraintViolationException` on failure — the same exception already used

@@ -3,6 +3,7 @@ package it.cityvoice.api.features.stories.specifications;
 import it.cityvoice.api.features.districts.entity.District;
 import it.cityvoice.api.features.districts.enums.Municipio;
 import it.cityvoice.api.features.stories.entity.Story;
+import it.cityvoice.api.features.stories.enums.ReportCategory;
 import it.cityvoice.api.features.stories.enums.StoryStatus;
 import it.cityvoice.api.features.stories.enums.StoryType;
 import jakarta.persistence.criteria.Join;
@@ -21,10 +22,10 @@ public final class StorySpecifications {
         return (root, query, cb) -> cb.equal(root.get("status"), StoryStatus.PUBLISHED);
     }
 
-    public static Specification<Story> ofCategory(String category) {
+    public static Specification<Story> ofCategory(ReportCategory category) {
         return (root, query, cb) -> cb.and(
                 cb.equal(root.get("type"), StoryType.REPORT),
-                cb.equal(cb.lower(root.get("category")), category.toLowerCase())
+                cb.equal(root.get("category"), category)
         );
     }
 

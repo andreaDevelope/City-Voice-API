@@ -96,6 +96,16 @@ A user can feature up to 3 unlocked badges. `featuredPosition` is 1, 2 or 3, or 
 
 `PUT /badge/featured` replaces the whole selection: it clears every position with a bulk update, then assigns the new ones. The bulk update clears the persistence context (`clearAutomatically`): without it, a badge that keeps the same position would not be rewritten and would stay `null`.
 
+### Report categories
+
+A report's category is a value of the `ReportCategory` enum, not a table: categories are never created by users.
+
+The value is stored as text (`EnumType.STRING`). After the first deploy values can only be added: renaming or removing one would make existing rows unreadable. In JSON the name travels in lowercase.
+
+`GET /public/stories/categories` always returns every category, in enum order, with a count of 0 included. The list comes from the enum and the numbers from the database, so the frontend always shows the same list.
+
+The feed's `category` filter is converted in the service rather than by the controller, so that it does not depend on how Spring binds enums in query parameters. It is case-insensitive; an unknown value returns 400.
+
 ## Entity-relationship diagram
 
 ```mermaid

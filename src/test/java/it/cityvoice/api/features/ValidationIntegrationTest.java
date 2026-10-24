@@ -6,6 +6,7 @@ import it.cityvoice.api.features.comments.dto.CreateCommentRequest;
 import it.cityvoice.api.features.reactions.dto.ReactToContentRequest;
 import it.cityvoice.api.features.reactions.enums.ReactionType;
 import it.cityvoice.api.features.stories.dto.CreateStoryRequest;
+import it.cityvoice.api.features.stories.enums.ReportCategory;
 import it.cityvoice.api.features.stories.enums.StoryType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,6 +19,7 @@ import java.util.UUID;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Transactional
@@ -38,7 +40,7 @@ class ValidationIntegrationTest extends IntegrationTestBase {
 
     private UUID postStory(TestUser author) throws Exception {
         CreateStoryRequest request = new CreateStoryRequest(
-                StoryType.REPORT, "decoro", 13L, FAKER.lorem().sentence(3),
+                StoryType.REPORT, ReportCategory.STRADE, 13L, FAKER.lorem().sentence(3),
                 FAKER.lorem().sentence(5), FAKER.lorem().paragraph());
         String body = mockMvc.perform(post("/api/cityvoice/stories")
                         .with(user(author.username()))
@@ -154,7 +156,7 @@ class ValidationIntegrationTest extends IntegrationTestBase {
     void anonymousSubmissionIsRejected() throws Exception {
         // nessun .with(user(...)): richiesta anonima
         CreateStoryRequest request = new CreateStoryRequest(
-                StoryType.REPORT, "decoro", 13L, "Titolo", "Descrizione", "Contenuto");
+                StoryType.REPORT, ReportCategory.STRADE, 13L, "Titolo", "Descrizione", "Contenuto");
 
         mockMvc.perform(post("/api/cityvoice/stories")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -166,7 +168,7 @@ class ValidationIntegrationTest extends IntegrationTestBase {
     @DisplayName("una segnalazione senza quartiere viene rifiutata")
     void reportWithoutDistrictIsRejected() throws Exception {
         CreateStoryRequest request = new CreateStoryRequest(
-                StoryType.REPORT, "decoro", null, "Titolo", "Descrizione", "Contenuto");
+                StoryType.REPORT, ReportCategory.STRADE, null, "Titolo", "Descrizione", "Contenuto");
 
         mockMvc.perform(post("/api/cityvoice/stories")
                         .with(user(owner.username()))
@@ -192,7 +194,7 @@ class ValidationIntegrationTest extends IntegrationTestBase {
     @DisplayName("un contenuto senza tipo viene rifiutato")
     void submissionWithoutTypeIsRejected() throws Exception {
         CreateStoryRequest request = new CreateStoryRequest(
-                null, "decoro", 13L, "Titolo", "Descrizione", "Contenuto");
+                null, ReportCategory.STRADE, 13L, "Titolo", "Descrizione", "Contenuto");
 
         mockMvc.perform(post("/api/cityvoice/stories")
                         .with(user(owner.username()))
@@ -205,7 +207,7 @@ class ValidationIntegrationTest extends IntegrationTestBase {
     @DisplayName("una segnalazione senza descrizione né testo viene rifiutata")
     void reportWithoutAnyContentIsRejected() throws Exception {
         CreateStoryRequest request = new CreateStoryRequest(
-                StoryType.REPORT, "decoro", 13L, "Titolo", null, "   ");
+                StoryType.REPORT, ReportCategory.STRADE, 13L, "Titolo", null, "   ");
 
         mockMvc.perform(post("/api/cityvoice/stories")
                         .with(user(owner.username()))
@@ -225,6 +227,50 @@ class ValidationIntegrationTest extends IntegrationTestBase {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("una categoria vuota nel body viene rifiutata")
+    void emptyCategoryInBodyReturnsBadRequest() throws Exception {
+        String body = """
+                {
+                  "type": "REPORT",
+                  "category": "",
+                  "districtId": 13,
+                  "title": "Titolo valido",
+                  "description": "Descrizione valida",
+                  "storyContent": "Contenuto valido"
+                }
+                """;
+
+        mockMvc.perform(post("/api/cityvoice/stories")
+                        .with(user(owner.username()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Formato della richiesta non valido"));
+    }
+
+    @Test
+    @DisplayName("una categoria inesistente nel body viene rifiutata")
+    void unknownCategoryInBodyReturnsBadRequest() throws Exception {
+        String body = """
+                {
+                  "type": "REPORT",
+                  "category": "pippo",
+                  "districtId": 13,
+                  "title": "Titolo valido",
+                  "description": "Descrizione valida",
+                  "storyContent": "Contenuto valido"
+                }
+                """;
+
+        mockMvc.perform(post("/api/cityvoice/stories")
+                        .with(user(owner.username()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Formato della richiesta non valido"));
     }
 
     // richiesta di registrazione con username casuale e la password indicata

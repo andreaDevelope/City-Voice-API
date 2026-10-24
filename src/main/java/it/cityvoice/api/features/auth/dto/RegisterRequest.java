@@ -10,6 +10,6 @@ public class RegisterRequest {
     @Size(min = 3, max = 14, message = "il campo username deve essere min 3 max 14 caratteri")
     private String username;
     @NotBlank(message = "campo password obbligatorio")
-    @Size(min = 4, max = 14, message = "il campo password deve essere min 4 e max 14 caratteri")
+    @Size(min = 6, max = 14, message = "il campo password deve essere min 4 e max 14 caratteri")
     private String password;
 }

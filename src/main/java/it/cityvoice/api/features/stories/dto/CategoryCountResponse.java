@@ -1,3 +1,5 @@
 package it.cityvoice.api.features.stories.dto;
 
-public record CategoryCountResponse(String category, long count) {}
+import it.cityvoice.api.features.stories.enums.ReportCategory;
+
+public record CategoryCountResponse(ReportCategory category, long count) {}

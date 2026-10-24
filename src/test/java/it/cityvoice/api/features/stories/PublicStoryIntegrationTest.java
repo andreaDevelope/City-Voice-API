@@ -10,6 +10,7 @@ import it.cityvoice.api.features.reactions.dto.ReactToContentRequest;
 import it.cityvoice.api.features.reactions.enums.ReactionType;
 import it.cityvoice.api.features.stories.dto.CreateStoryRequest;
 import it.cityvoice.api.features.stories.entity.Story;
+import it.cityvoice.api.features.stories.enums.ReportCategory;
 import it.cityvoice.api.features.stories.enums.StoryStatus;
 import it.cityvoice.api.features.stories.enums.StoryType;
 import it.cityvoice.api.features.stories.repositories.StoryRepo;
@@ -40,7 +41,7 @@ class PublicStoryIntegrationTest extends IntegrationTestBase {
     @Autowired
     private StoryRepo storyRepo;
 
-    private UUID postStory(TestUser author, StoryType type, String category, Long districtId,
+    private UUID postStory(TestUser author, StoryType type, ReportCategory category, Long districtId,
                             String title, String description, String storyContent) throws Exception {
         CreateStoryRequest request = new CreateStoryRequest(type, category, districtId, title, description, storyContent);
         String body = mockMvc.perform(post("/api/cityvoice/stories")
@@ -81,8 +82,8 @@ class PublicStoryIntegrationTest extends IntegrationTestBase {
     @DisplayName("le storie sono ordinate dalla più recente")
     void storiesAreOrderedByMostRecent() throws Exception {
         TestUser owner = registerUser();
-        postStory(owner, StoryType.REPORT, "decoro", 13L, "Prima nel tempo", "Descrizione", "Contenuto");
-        postStory(owner, StoryType.REPORT, "decoro", 13L, "Seconda nel tempo", "Descrizione", "Contenuto");
+        postStory(owner, StoryType.REPORT, ReportCategory.STRADE, 13L, "Prima nel tempo", "Descrizione", "Contenuto");
+        postStory(owner, StoryType.REPORT, ReportCategory.STRADE, 13L, "Seconda nel tempo", "Descrizione", "Contenuto");
 
         mockMvc.perform(get("/api/cityvoice/public/stories"))
                 .andExpect(status().isOk())
@@ -94,7 +95,7 @@ class PublicStoryIntegrationTest extends IntegrationTestBase {
     @DisplayName("la ricerca per titolo trova il contenuto")
     void searchByTitleFindsContent() throws Exception {
         TestUser owner = registerUser();
-        postStory(owner, StoryType.REPORT, "decoro", 13L, "Buche pericolose", "Descrizione", "Contenuto");
+        postStory(owner, StoryType.REPORT, ReportCategory.STRADE, 13L, "Buche pericolose", "Descrizione", "Contenuto");
 
         mockMvc.perform(get("/api/cityvoice/public/stories").param("q", "buche"))
                 .andExpect(status().isOk())
@@ -106,7 +107,7 @@ class PublicStoryIntegrationTest extends IntegrationTestBase {
     @DisplayName("la ricerca per username trova il contenuto")
     void searchByUsernameFindsContent() throws Exception {
         TestUser owner = registerUser();
-        postStory(owner, StoryType.REPORT, "decoro", 13L, "Titolo autore", "Descrizione", "Contenuto");
+        postStory(owner, StoryType.REPORT, ReportCategory.STRADE, 13L, "Titolo autore", "Descrizione", "Contenuto");
 
         mockMvc.perform(get("/api/cityvoice/public/stories").param("q", owner.username()))
                 .andExpect(status().isOk())
@@ -118,7 +119,7 @@ class PublicStoryIntegrationTest extends IntegrationTestBase {
     @DisplayName("la ricerca per nome del quartiere trova il contenuto")
     void searchByDistrictNameFindsContent() throws Exception {
         TestUser owner = registerUser();
-        postStory(owner, StoryType.REPORT, "decoro", 13L, "Titolo quartiere", "Descrizione", "Contenuto");
+        postStory(owner, StoryType.REPORT, ReportCategory.STRADE, 13L, "Titolo quartiere", "Descrizione", "Contenuto");
 
         mockMvc.perform(get("/api/cityvoice/public/stories").param("q", "Trastevere"))
                 .andExpect(status().isOk())
@@ -130,7 +131,7 @@ class PublicStoryIntegrationTest extends IntegrationTestBase {
     @DisplayName("la ricerca per label del municipio trova il contenuto")
     void searchByMunicipioLabelFindsContent() throws Exception {
         TestUser owner = registerUser();
-        postStory(owner, StoryType.REPORT, "decoro", 13L, "Titolo municipio label", "Descrizione", "Contenuto");
+        postStory(owner, StoryType.REPORT, ReportCategory.STRADE, 13L, "Titolo municipio label", "Descrizione", "Contenuto");
 
         mockMvc.perform(get("/api/cityvoice/public/stories").param("q", "Centro Storico"))
                 .andExpect(status().isOk())
@@ -142,7 +143,7 @@ class PublicStoryIntegrationTest extends IntegrationTestBase {
     @DisplayName("la ricerca per numero del municipio trova il contenuto")
     void searchByMunicipioNumberFindsContent() throws Exception {
         TestUser owner = registerUser();
-        postStory(owner, StoryType.REPORT, "decoro", 176L, "Titolo municipio numero", "Descrizione", "Contenuto");
+        postStory(owner, StoryType.REPORT, ReportCategory.STRADE, 176L, "Titolo municipio numero", "Descrizione", "Contenuto");
 
         mockMvc.perform(get("/api/cityvoice/public/stories").param("q", "VIII"))
                 .andExpect(status().isOk())
@@ -154,11 +155,11 @@ class PublicStoryIntegrationTest extends IntegrationTestBase {
     @DisplayName("il filtro per categoria restituisce solo le segnalazioni di quella categoria")
     void categoryFilterReturnsOnlyMatchingReports() throws Exception {
         TestUser owner = registerUser();
-        postStory(owner, StoryType.REPORT, "decoro", 13L, "Report decoro", "Descrizione", "Contenuto");
-        postStory(owner, StoryType.REPORT, "sicurezza", 13L, "Report sicurezza", "Descrizione", "Contenuto");
+        postStory(owner, StoryType.REPORT, ReportCategory.STRADE, 13L, "Report decoro", "Descrizione", "Contenuto");
+        postStory(owner, StoryType.REPORT, ReportCategory.SICUREZZA, 13L, "Report sicurezza", "Descrizione", "Contenuto");
         postStory(owner, StoryType.STORY, null, null, "Storia libera", "Descrizione", "Contenuto");
 
-        mockMvc.perform(get("/api/cityvoice/public/stories").param("category", "decoro"))
+        mockMvc.perform(get("/api/cityvoice/public/stories").param("category", "strade"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items.length()").value(1))
                 .andExpect(jsonPath("$.items[0].title").value("Report decoro"));
@@ -172,7 +173,7 @@ class PublicStoryIntegrationTest extends IntegrationTestBase {
         TestUser liker2 = registerUser();
         TestUser disliker = registerUser();
 
-        UUID storyId = postStory(owner, StoryType.REPORT, "decoro", 13L, "Titolo unico conteggi", "Descrizione", "Contenuto");
+        UUID storyId = postStory(owner, StoryType.REPORT, ReportCategory.STRADE, 13L, "Titolo unico conteggi", "Descrizione", "Contenuto");
 
         react(liker1, storyId, ReactionType.LIKE);
         react(liker2, storyId, ReactionType.LIKE);
@@ -192,7 +193,7 @@ class PublicStoryIntegrationTest extends IntegrationTestBase {
     @DisplayName("i badge in evidenza dell'autore sono presenti nella risposta")
     void featuredBadgesOfAuthorArePresent() throws Exception {
         TestUser owner = registerUser();
-        postStory(owner, StoryType.REPORT, "decoro", 13L, "Titolo badge", "Descrizione", "Contenuto");
+        postStory(owner, StoryType.REPORT, ReportCategory.STRADE, 13L, "Titolo badge", "Descrizione", "Contenuto");
 
         UserRome authorUserRome = userRomeRepo.findByAppUserId(owner.appUserId());
         List<UserBadge> unlocked = userBadgeRepo.findByUserRomeAndBadgeIdIn(authorUserRome, List.of(2L));
@@ -211,8 +212,8 @@ class PublicStoryIntegrationTest extends IntegrationTestBase {
     @DisplayName("la paginazione calcola correttamente hasNext")
     void paginationComputesHasNextCorrectly() throws Exception {
         TestUser owner = registerUser();
-        postStory(owner, StoryType.REPORT, "decoro", 13L, "Pagina prima", "Descrizione", "Contenuto");
-        postStory(owner, StoryType.REPORT, "decoro", 13L, "Pagina seconda", "Descrizione", "Contenuto");
+        postStory(owner, StoryType.REPORT, ReportCategory.STRADE, 13L, "Pagina prima", "Descrizione", "Contenuto");
+        postStory(owner, StoryType.REPORT, ReportCategory.STRADE, 13L, "Pagina seconda", "Descrizione", "Contenuto");
 
         mockMvc.perform(get("/api/cityvoice/public/stories").param("size", "1").param("page", "0"))
                 .andExpect(status().isOk())
@@ -230,7 +231,7 @@ class PublicStoryIntegrationTest extends IntegrationTestBase {
     void previewFallsBackToTruncatedContent() throws Exception {
         TestUser owner = registerUser();
         String longContent = "a".repeat(250);
-        postStory(owner, StoryType.REPORT, "decoro", 13L, "Titolo preview", null, longContent);
+        postStory(owner, StoryType.REPORT, ReportCategory.STRADE, 13L, "Titolo preview", null, longContent);
 
         mockMvc.perform(get("/api/cityvoice/public/stories").param("q", "Titolo preview"))
                 .andExpect(status().isOk())
@@ -238,43 +239,42 @@ class PublicStoryIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
-    @DisplayName("i conteggi per categoria sono raggruppati e ordinati alfabeticamente")
-    void categoryCountsAreGroupedAndOrderedAlphabetically() throws Exception {
+    @DisplayName("i conteggi per categoria includono tutte le voci dell'enum nel loro ordine")
+    void categoryCountsIncludeEveryCategoryInEnumOrder() throws Exception {
         TestUser owner = registerUser();
-        postStory(owner, StoryType.REPORT, "decoro", 13L, "Decoro uno", "Descrizione", "Contenuto");
-        postStory(owner, StoryType.REPORT, "decoro", 13L, "Decoro due", "Descrizione", "Contenuto");
-        postStory(owner, StoryType.REPORT, "trasporti", 13L, "Trasporti uno", "Descrizione", "Contenuto");
+        postStory(owner, StoryType.REPORT, ReportCategory.STRADE, 13L, "Decoro uno", "Descrizione", "Contenuto");
+        postStory(owner, StoryType.REPORT, ReportCategory.STRADE, 13L, "Decoro due", "Descrizione", "Contenuto");
+        postStory(owner, StoryType.REPORT, ReportCategory.SICUREZZA, 13L, "Trasporti uno", "Descrizione", "Contenuto");
         postStory(owner, StoryType.STORY, null, null, "Storia libera categorie", "Descrizione", "Contenuto");
 
         mockMvc.perform(get("/api/cityvoice/public/stories/categories"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].category").value("decoro"))
+                .andExpect(jsonPath("$.length()").value(11))
+                .andExpect(jsonPath("$[0].category").value("strade"))
                 .andExpect(jsonPath("$[0].count").value(2))
-                .andExpect(jsonPath("$[1].category").value("trasporti"))
-                .andExpect(jsonPath("$[1].count").value(1));
+                .andExpect(jsonPath("$[6].category").value("sicurezza"))
+                .andExpect(jsonPath("$[6].count").value(1))
+                .andExpect(jsonPath("$[10].category").value("altro"))
+                .andExpect(jsonPath("$[10].count").value(0));
     }
 
     @Test
-    @DisplayName("categorie con maiuscole diverse sono contate come una sola, in minuscolo")
-    void categoryCountsAreCaseInsensitive() throws Exception {
+    @DisplayName("il filtro per categoria è case-insensitive")
+    void categoryFilterIsCaseInsensitive() throws Exception {
         TestUser owner = registerUser();
-        postStory(owner, StoryType.REPORT, "Decoro", 13L, "Decoro maiuscolo", "Descrizione", "Contenuto");
-        postStory(owner, StoryType.REPORT, "decoro", 13L, "Decoro minuscolo", "Descrizione", "Contenuto");
+        postStory(owner, StoryType.REPORT, ReportCategory.STRADE, 13L, "Buche in via Nazionale", "Descrizione", "Contenuto");
 
-        mockMvc.perform(get("/api/cityvoice/public/stories/categories"))
+        mockMvc.perform(get("/api/cityvoice/public/stories").param("category", "Strade"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].category").value("decoro"))
-                .andExpect(jsonPath("$[0].count").value(2));
+                .andExpect(jsonPath("$.items.length()").value(1));
     }
 
     @Test
     @DisplayName("una segnalazione non pubblicata non viene contata")
     void unpublishedReportIsNotCounted() throws Exception {
         TestUser owner = registerUser();
-        postStory(owner, StoryType.REPORT, "decoro", 13L, "Decoro pubblicato", "Descrizione", "Contenuto");
-        UUID unpublishedId = postStory(owner, StoryType.REPORT, "decoro", 13L, "Decoro non pubblicato", "Descrizione", "Contenuto");
+        postStory(owner, StoryType.REPORT, ReportCategory.STRADE, 13L, "Decoro pubblicato", "Descrizione", "Contenuto");
+        UUID unpublishedId = postStory(owner, StoryType.REPORT, ReportCategory.STRADE, 13L, "Decoro non pubblicato", "Descrizione", "Contenuto");
 
         Story unpublished = storyRepo.findById(unpublishedId).orElseThrow();
         unpublished.setStatus(StoryStatus.BLOCKED);
@@ -282,8 +282,16 @@ class PublicStoryIntegrationTest extends IntegrationTestBase {
 
         mockMvc.perform(get("/api/cityvoice/public/stories/categories"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].category").value("decoro"))
+                .andExpect(jsonPath("$.length()").value(11))
+                .andExpect(jsonPath("$[0].category").value("strade"))
                 .andExpect(jsonPath("$[0].count").value(1));
+    }
+
+    @Test
+    @DisplayName("un valore di categoria inesistente viene rifiutato")
+    void unknownCategoryFilterReturnsBadRequest() throws Exception {
+        mockMvc.perform(get("/api/cityvoice/public/stories").param("category", "pippo"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Categoria non valida"));
     }
 }

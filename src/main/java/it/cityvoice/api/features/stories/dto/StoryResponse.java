@@ -2,6 +2,7 @@ package it.cityvoice.api.features.stories.dto;
 
 import it.cityvoice.api.features.profile.badges.dto.CategoryProgressResponse;
 import it.cityvoice.api.features.stories.entity.Story;
+import it.cityvoice.api.features.stories.enums.ReportCategory;
 import it.cityvoice.api.features.stories.enums.StoryStatus;
 import it.cityvoice.api.features.stories.enums.StoryType;
 
@@ -12,7 +13,7 @@ import java.util.UUID;
 public record StoryResponse(
         UUID id,
         StoryType type,
-        String category,
+        ReportCategory category,
         String district,
         String title,
         String description,

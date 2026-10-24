@@ -2,6 +2,7 @@ package it.cityvoice.api.features.stories.dto;
 
 import it.cityvoice.api.features.districts.entity.District;
 import it.cityvoice.api.features.stories.entity.Story;
+import it.cityvoice.api.features.stories.enums.ReportCategory;
 import it.cityvoice.api.features.stories.enums.StoryType;
 
 import java.time.Instant;
@@ -12,7 +13,7 @@ public record StoryCardResponse(
         StoryType type,
         String title,
         String preview,
-        String category,
+        ReportCategory category,
         String district,
         String municipio,
         String municipioLabel,

@@ -7,6 +7,7 @@ import it.cityvoice.api.features.auth.services.AppUserService;
 import it.cityvoice.api.features.profile.user_rome.entity.UserRome;
 import it.cityvoice.api.features.profile.user_rome.repositories.UserRomeRepo;
 import it.cityvoice.api.features.stories.dto.CreateStoryRequest;
+import it.cityvoice.api.features.stories.enums.ReportCategory;
 import it.cityvoice.api.features.stories.enums.StoryType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -47,7 +48,7 @@ class StoryIntegrationTest extends IntegrationTestBase {
     @DisplayName("l'invio di una storia incrementa activity e neighborhood")
     void submitStoryIncrementsCounters() throws Exception {
         CreateStoryRequest request = new CreateStoryRequest(
-                StoryType.REPORT, "decoro", 13L, "Cassonetti pieni",
+                StoryType.REPORT, ReportCategory.RIFIUTI, 13L, "Cassonetti pieni",
                 "Rifiuti a terra da giorni", "Sono pieni da una settimana");
 
         mockMvc.perform(post("/api/cityvoice/stories")
@@ -69,9 +70,9 @@ class StoryIntegrationTest extends IntegrationTestBase {
     void sameMunicipioCountsOnce() throws Exception {
         // Monti e Trastevere stanno entrambi nel Municipio I
         CreateStoryRequest first = new CreateStoryRequest(
-                StoryType.REPORT, "decoro", 1L, "Prima", "Descrizione", "Contenuto");
+                StoryType.REPORT, ReportCategory.STRADE, 1L, "Prima", "Descrizione", "Contenuto");
         CreateStoryRequest second = new CreateStoryRequest(
-                StoryType.REPORT, "sicurezza", 13L, "Seconda", "Descrizione", "Contenuto");
+                StoryType.REPORT, ReportCategory.SICUREZZA, 13L, "Seconda", "Descrizione", "Contenuto");
 
         mockMvc.perform(post("/api/cityvoice/stories")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -91,9 +92,9 @@ class StoryIntegrationTest extends IntegrationTestBase {
     void differentMunicipiCountTwice() throws Exception {
         // Trastevere (Municipio I) e Garbatella (Municipio VIII)
         CreateStoryRequest first = new CreateStoryRequest(
-                StoryType.REPORT, "decoro", 13L, "Prima", "Descrizione", "Contenuto");
+                StoryType.REPORT, ReportCategory.STRADE, 13L, "Prima", "Descrizione", "Contenuto");
         CreateStoryRequest second = new CreateStoryRequest(
-                StoryType.REPORT, "sicurezza", 176L, "Seconda", "Descrizione", "Contenuto");
+                StoryType.REPORT, ReportCategory.SICUREZZA, 176L, "Seconda", "Descrizione", "Contenuto");
 
         mockMvc.perform(post("/api/cityvoice/stories")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -131,7 +132,7 @@ class StoryIntegrationTest extends IntegrationTestBase {
     @DisplayName("una segnalazione con la sola descrizione viene pubblicata e il testo vuoto salvato come null")
     void reportWithOnlyDescriptionIsAccepted() throws Exception {
         CreateStoryRequest request = new CreateStoryRequest(
-                StoryType.REPORT, "decoro", 13L, "Titolo", "Descrizione", "   ");
+                StoryType.REPORT, ReportCategory.STRADE, 13L, "Titolo", "Descrizione", "   ");
 
         mockMvc.perform(post("/api/cityvoice/stories")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -160,9 +161,9 @@ class StoryIntegrationTest extends IntegrationTestBase {
     @DisplayName("un secondo contenuto con lo stesso titolo viene rifiutato")
     void duplicateTitleIsRejected() throws Exception {
         CreateStoryRequest first = new CreateStoryRequest(
-                StoryType.REPORT, "decoro", 13L, "Buche in strada", "Descrizione", "Contenuto");
+                StoryType.REPORT, ReportCategory.STRADE, 13L, "Buche in strada", "Descrizione", "Contenuto");
         CreateStoryRequest second = new CreateStoryRequest(
-                StoryType.REPORT, "sicurezza", 13L, "Buche in strada", "Descrizione", "Contenuto");
+                StoryType.REPORT, ReportCategory.SICUREZZA, 13L, "Buche in strada", "Descrizione", "Contenuto");
 
         mockMvc.perform(post("/api/cityvoice/stories")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -180,9 +181,9 @@ class StoryIntegrationTest extends IntegrationTestBase {
     @DisplayName("titolo duplicato con maiuscole e spazi agli estremi diversi viene rifiutato")
     void duplicateTitleCaseAndSpacesIsRejected() throws Exception {
         CreateStoryRequest first = new CreateStoryRequest(
-                StoryType.REPORT, "decoro", 13L, "Buche", "Descrizione", "Contenuto");
+                StoryType.REPORT, ReportCategory.STRADE, 13L, "Buche", "Descrizione", "Contenuto");
         CreateStoryRequest second = new CreateStoryRequest(
-                StoryType.REPORT, "sicurezza", 13L, "  bUCHE ", "Descrizione", "Contenuto");
+                StoryType.REPORT, ReportCategory.SICUREZZA, 13L, "  bUCHE ", "Descrizione", "Contenuto");
 
         mockMvc.perform(post("/api/cityvoice/stories")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -202,7 +203,7 @@ class StoryIntegrationTest extends IntegrationTestBase {
         CreateStoryRequest story = new CreateStoryRequest(
                 StoryType.STORY, null, null, "Cassonetti pieni", "Descrizione", "Contenuto");
         CreateStoryRequest report = new CreateStoryRequest(
-                StoryType.REPORT, "decoro", 13L, "Cassonetti pieni", "Descrizione", "Contenuto");
+                StoryType.REPORT, ReportCategory.RIFIUTI, 13L, "Cassonetti pieni", "Descrizione", "Contenuto");
 
         mockMvc.perform(post("/api/cityvoice/stories")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -220,7 +221,7 @@ class StoryIntegrationTest extends IntegrationTestBase {
     @DisplayName("il titolo salvato viene trimmato")
     void titleIsTrimmedOnSave() throws Exception {
         CreateStoryRequest request = new CreateStoryRequest(
-                StoryType.REPORT, "decoro", 13L, "  Buche  ", "Descrizione", "Contenuto");
+                StoryType.REPORT, ReportCategory.STRADE, 13L, "  Buche  ", "Descrizione", "Contenuto");
 
         mockMvc.perform(post("/api/cityvoice/stories")
                         .contentType(MediaType.APPLICATION_JSON)

@@ -13,11 +13,13 @@ import it.cityvoice.api.features.stories.dto.FeaturedBadgeResponse;
 import it.cityvoice.api.features.stories.dto.StoryAuthorResponse;
 import it.cityvoice.api.features.stories.dto.StoryCardResponse;
 import it.cityvoice.api.features.stories.entity.Story;
+import it.cityvoice.api.features.stories.enums.ReportCategory;
 import it.cityvoice.api.features.stories.enums.StoryStatus;
 import it.cityvoice.api.features.stories.enums.StoryType;
 import it.cityvoice.api.features.stories.repositories.StoryRepo;
 import it.cityvoice.api.features.stories.specifications.StorySpecifications;
 import it.cityvoice.api.shared.dto.PageResponse;
+import it.cityvoice.api.shared.exceptions.BadRequestException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,13 +29,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -58,7 +54,9 @@ public class StoryQueryServ {
 
         Specification<Story> spec = StorySpecifications.published();
         if (trimmedCategory != null && !trimmedCategory.isEmpty()) {
-            spec = spec.and(StorySpecifications.ofCategory(trimmedCategory));
+            ReportCategory reportCategory = ReportCategory.fromJson(trimmedCategory)
+                    .orElseThrow(() -> new BadRequestException("Categoria non valida"));
+            spec = spec.and(StorySpecifications.ofCategory(reportCategory));
         }
         if (trimmedQuery != null && !trimmedQuery.isEmpty()) {
             spec = spec.and(StorySpecifications.matches(trimmedQuery, matchingMunicipi(trimmedQuery)));
@@ -88,15 +86,18 @@ public class StoryQueryServ {
     }
 
     public List<CategoryCountResponse> categoryCounts() {
-        return storyRepo.countByCategory(StoryStatus.PUBLISHED, StoryType.REPORT).stream()
-                .map(row -> new CategoryCountResponse(row.getCategory(), row.getCount()))
+        Map<ReportCategory, Long> counts = storyRepo.countByCategory(StoryStatus.PUBLISHED, StoryType.REPORT).stream()
+                .collect(Collectors.toMap(StoryRepo.CategoryCountProjection::getCategory, StoryRepo.CategoryCountProjection::getCount));
+
+        return Arrays.stream(ReportCategory.values())
+                .map(category -> new CategoryCountResponse(category, counts.getOrDefault(category, 0L)))
                 .toList();
     }
 
     private StoryCardResponse toCard(Story story,
-                                      Map<UUID, Map<ReactionType, Long>> reactionCounts,
-                                      Map<UUID, Long> commentCounts,
-                                      Map<Long, List<FeaturedBadgeResponse>> featuredBadges) {
+                                     Map<UUID, Map<ReactionType, Long>> reactionCounts,
+                                     Map<UUID, Long> commentCounts,
+                                     Map<Long, List<FeaturedBadgeResponse>> featuredBadges) {
         Map<ReactionType, Long> counts = reactionCounts.getOrDefault(story.getId(), Map.of());
         long likes = counts.getOrDefault(ReactionType.LIKE, 0L);
         long dislikes = counts.getOrDefault(ReactionType.DISLIKE, 0L);

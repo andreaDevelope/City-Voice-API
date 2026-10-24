@@ -2,6 +2,7 @@ package it.cityvoice.api.features.stories.entity;
 
 import it.cityvoice.api.features.districts.entity.District;
 import it.cityvoice.api.features.profile.user_rome.entity.UserRome;
+import it.cityvoice.api.features.stories.enums.ReportCategory;
 import it.cityvoice.api.features.stories.enums.StoryStatus;
 import it.cityvoice.api.features.stories.enums.StoryType;
 import jakarta.persistence.*;
@@ -28,7 +29,8 @@ public class Story {
     private StoryType type;
 
     @Column
-    private String category;
+    @Enumerated(EnumType.STRING)
+    private ReportCategory category;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "district_id")
