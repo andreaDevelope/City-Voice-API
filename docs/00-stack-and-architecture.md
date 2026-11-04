@@ -60,6 +60,7 @@ During development `SecurityConfig` lets every request through at filter level (
 | GET | `/public/districts` | no | Districts grouped by municipio, for the report form |
 | GET | `/public/stories` | no | Published stories and reports, newest first; `q` searches title, username, district and municipio, `category` filters reports by category (case-insensitive, unknown value → 400); paginated |
 | GET | `/public/stories/categories` | no | Every report category with its count of published reports, 0 included, in enum order |
+| GET | `/public/stories/{id}` | no | A single published story or report with full text; 404 if missing or not published |
 | GET | `/public/stats` | no | Number of members, published stories and published reports |
 
 `POST /reactions` handles three cases in one endpoint: no prior reaction creates one, the same type removes it, a different type switches the vote. It returns 200 rather than 201 because it does not always create a resource.

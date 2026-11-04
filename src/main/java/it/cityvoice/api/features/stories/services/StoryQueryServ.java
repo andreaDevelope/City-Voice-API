@@ -12,6 +12,7 @@ import it.cityvoice.api.features.stories.dto.CategoryCountResponse;
 import it.cityvoice.api.features.stories.dto.FeaturedBadgeResponse;
 import it.cityvoice.api.features.stories.dto.StoryAuthorResponse;
 import it.cityvoice.api.features.stories.dto.StoryCardResponse;
+import it.cityvoice.api.features.stories.dto.StoryDetailResponse;
 import it.cityvoice.api.features.stories.entity.Story;
 import it.cityvoice.api.features.stories.enums.ReportCategory;
 import it.cityvoice.api.features.stories.enums.StoryStatus;
@@ -20,6 +21,7 @@ import it.cityvoice.api.features.stories.repositories.StoryRepo;
 import it.cityvoice.api.features.stories.specifications.StorySpecifications;
 import it.cityvoice.api.shared.dto.PageResponse;
 import it.cityvoice.api.shared.exceptions.BadRequestException;
+import it.cityvoice.api.shared.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -70,19 +72,22 @@ public class StoryQueryServ {
             return new PageResponse<>(List.of(), resolvedPage, resolvedSize, result.hasNext());
         }
 
-        List<UUID> storyIds = stories.stream().map(Story::getId).toList();
-        List<Long> authorIds = stories.stream().map(story -> story.getUserRome().getId()).distinct().toList();
-
-        Map<UUID, Map<ReactionType, Long>> reactionCounts = groupReactionCounts(reactionRepo.countByStoryIdAndType(storyIds));
-        Map<UUID, Long> commentCounts = commentRepo.countByStoryIdIn(storyIds).stream()
-                .collect(Collectors.toMap(CommentCountProjection::getStoryId, CommentCountProjection::getCount));
-        Map<Long, List<FeaturedBadgeResponse>> featuredBadges = groupFeaturedBadges(userBadgeRepo.findFeaturedByUserRomeIdIn(authorIds));
-
+        Aggregates aggregates = loadAggregates(stories);
         List<StoryCardResponse> items = stories.stream()
-                .map(story -> toCard(story, reactionCounts, commentCounts, featuredBadges))
+                .map(story -> toCard(story, aggregates))
                 .toList();
 
         return new PageResponse<>(items, resolvedPage, resolvedSize, result.hasNext());
+    }
+
+    public StoryDetailResponse getPublishedStory(UUID id) {
+        // Missing, in review, blocked or unpublished: the public gets the same 404
+        Story story = storyRepo.findByIdAndStatus(id, StoryStatus.PUBLISHED)
+                .orElseThrow(() -> new ResourceNotFoundException("Storia non trovata"));
+
+        Aggregates aggregates = loadAggregates(List.of(story));
+        return StoryDetailResponse.from(story, aggregates.author(story),
+                aggregates.likes(story), aggregates.dislikes(story), aggregates.comments(story));
     }
 
     public List<CategoryCountResponse> categoryCounts() {
@@ -94,20 +99,50 @@ public class StoryQueryServ {
                 .toList();
     }
 
-    private StoryCardResponse toCard(Story story,
-                                     Map<UUID, Map<ReactionType, Long>> reactionCounts,
-                                     Map<UUID, Long> commentCounts,
-                                     Map<Long, List<FeaturedBadgeResponse>> featuredBadges) {
-        Map<ReactionType, Long> counts = reactionCounts.getOrDefault(story.getId(), Map.of());
-        long likes = counts.getOrDefault(ReactionType.LIKE, 0L);
-        long dislikes = counts.getOrDefault(ReactionType.DISLIKE, 0L);
-        long comments = commentCounts.getOrDefault(story.getId(), 0L);
+    private StoryCardResponse toCard(Story story, Aggregates aggregates) {
+        return StoryCardResponse.from(story, aggregates.author(story),
+                aggregates.likes(story), aggregates.dislikes(story), aggregates.comments(story));
+    }
 
-        Long authorId = story.getUserRome().getId();
-        StoryAuthorResponse author = StoryAuthorResponse.from(
-                story.getUserRome(), featuredBadges.getOrDefault(authorId, List.of()));
+    // Reactions, comments and authors' featured badges in three queries, for a page or a single item
+    private Aggregates loadAggregates(List<Story> stories) {
+        List<UUID> storyIds = stories.stream().map(Story::getId).toList();
+        List<Long> authorIds = stories.stream().map(story -> story.getUserRome().getId()).distinct().toList();
 
-        return StoryCardResponse.from(story, author, likes, dislikes, comments);
+        Map<UUID, Map<ReactionType, Long>> reactionCounts = groupReactionCounts(reactionRepo.countByStoryIdAndType(storyIds));
+        Map<UUID, Long> commentCounts = commentRepo.countByStoryIdIn(storyIds).stream()
+                .collect(Collectors.toMap(CommentCountProjection::getStoryId, CommentCountProjection::getCount));
+        Map<Long, List<FeaturedBadgeResponse>> featuredBadges = groupFeaturedBadges(userBadgeRepo.findFeaturedByUserRomeIdIn(authorIds));
+
+        return new Aggregates(reactionCounts, commentCounts, featuredBadges);
+    }
+
+    private record Aggregates(
+            Map<UUID, Map<ReactionType, Long>> reactionCounts,
+            Map<UUID, Long> commentCounts,
+            Map<Long, List<FeaturedBadgeResponse>> featuredBadges
+    ) {
+        long likes(Story story) {
+            return reactions(story).getOrDefault(ReactionType.LIKE, 0L);
+        }
+
+        long dislikes(Story story) {
+            return reactions(story).getOrDefault(ReactionType.DISLIKE, 0L);
+        }
+
+        long comments(Story story) {
+            return commentCounts.getOrDefault(story.getId(), 0L);
+        }
+
+        StoryAuthorResponse author(Story story) {
+            Long authorId = story.getUserRome().getId();
+            return StoryAuthorResponse.from(
+                    story.getUserRome(), featuredBadges.getOrDefault(authorId, List.of()));
+        }
+
+        private Map<ReactionType, Long> reactions(Story story) {
+            return reactionCounts.getOrDefault(story.getId(), Map.of());
+        }
     }
 
     private List<Municipio> matchingMunicipi(String query) {

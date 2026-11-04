@@ -16,6 +16,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface StoryRepo extends JpaRepository<Story, UUID>, JpaSpecificationExecutor<Story> {
@@ -28,6 +29,10 @@ public interface StoryRepo extends JpaRepository<Story, UUID>, JpaSpecificationE
     @Override
     @EntityGraph(attributePaths = {"userRome", "userRome.appUser", "district"})
     Page<Story> findAll(Specification<Story> spec, Pageable pageable);
+
+    // Public detail: one item by id and status, with the same graph as the feed
+    @EntityGraph(attributePaths = {"userRome", "userRome.appUser", "district"})
+    Optional<Story> findByIdAndStatus(UUID id, StoryStatus status);
 
     // Published reports per category; categories with no reports are absent
     @Query("SELECT s.category AS category, COUNT(s) AS count FROM Story s " +

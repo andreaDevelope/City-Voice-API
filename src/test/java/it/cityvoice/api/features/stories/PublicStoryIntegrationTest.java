@@ -294,4 +294,64 @@ class PublicStoryIntegrationTest extends IntegrationTestBase {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Categoria non valida"));
     }
+
+    @Test
+    @DisplayName("una storia pubblicata è leggibile da anonimo con il testo completo")
+    void publishedStoryIsReadableByAnonymousWithFullText() throws Exception {
+        TestUser owner = registerUser();
+        // longer than the feed preview: the detail must return it whole, untruncated
+        String longContent = "b".repeat(250);
+        UUID storyId = postStory(owner, StoryType.STORY, null, null,
+                "Titolo dettaglio storia", "Descrizione dettaglio storia", longContent);
+
+        mockMvc.perform(get("/api/cityvoice/public/stories/" + storyId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(storyId.toString()))
+                .andExpect(jsonPath("$.type").value("STORY"))
+                .andExpect(jsonPath("$.title").value("Titolo dettaglio storia"))
+                .andExpect(jsonPath("$.description").value("Descrizione dettaglio storia"))
+                .andExpect(jsonPath("$.storyContent").value(longContent))
+                .andExpect(jsonPath("$.author.username").value(owner.username()))
+                .andExpect(jsonPath("$.municipioLabel").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("una segnalazione pubblicata espone categoria e quartiere")
+    void publishedReportExposesCategoryAndDistrict() throws Exception {
+        TestUser owner = registerUser();
+        UUID reportId = postStory(owner, StoryType.REPORT, ReportCategory.STRADE, 13L,
+                "Titolo dettaglio segnalazione", "Descrizione dettaglio segnalazione", "Contenuto");
+
+        mockMvc.perform(get("/api/cityvoice/public/stories/" + reportId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.type").value("REPORT"))
+                .andExpect(jsonPath("$.category").value("strade"))
+                .andExpect(jsonPath("$.district").value("Trastevere"))
+                .andExpect(jsonPath("$.municipio").value("I"))
+                .andExpect(jsonPath("$.municipioLabel").value("Centro Storico"));
+    }
+
+    @Test
+    @DisplayName("una segnalazione bloccata non è raggiungibile nel dettaglio")
+    void blockedReportIsNotFound() throws Exception {
+        TestUser owner = registerUser();
+        UUID blockedId = postStory(owner, StoryType.REPORT, ReportCategory.STRADE, 13L,
+                "Titolo dettaglio bloccato", "Descrizione", "Contenuto");
+
+        Story blocked = storyRepo.findById(blockedId).orElseThrow();
+        blocked.setStatus(StoryStatus.BLOCKED);
+        storyRepo.save(blocked);
+
+        mockMvc.perform(get("/api/cityvoice/public/stories/" + blockedId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Storia non trovata"));
+    }
+
+    @Test
+    @DisplayName("un id inesistente restituisce 404")
+    void unknownIdIsNotFound() throws Exception {
+        mockMvc.perform(get("/api/cityvoice/public/stories/" + UUID.randomUUID()))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Storia non trovata"));
+    }
 }
