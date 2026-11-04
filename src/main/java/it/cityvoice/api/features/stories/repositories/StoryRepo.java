@@ -35,6 +35,8 @@ public interface StoryRepo extends JpaRepository<Story, UUID>, JpaSpecificationE
             "GROUP BY s.category")
     List<CategoryCountProjection> countByCategory(@Param("status") StoryStatus status, @Param("type") StoryType type);
 
+    long countByStatusAndType(StoryStatus status, StoryType type);
+
     interface CategoryCountProjection {
         ReportCategory getCategory();
         long getCount();
