@@ -282,11 +282,11 @@ class ValidationIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
-    @DisplayName("una password di 3 caratteri viene rifiutata in registrazione")
+    @DisplayName("una password di 5 caratteri viene rifiutata in registrazione")
     void registrationWithTooShortPasswordIsRejected() throws Exception {
         mockMvc.perform(post("/api/cityvoice/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(registerRequest("abc"))))
+                        .content(objectMapper.writeValueAsString(registerRequest("abcde"))))
                 .andExpect(status().isBadRequest());
     }
 
@@ -300,11 +300,11 @@ class ValidationIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
-    @DisplayName("una password di 4 caratteri è accettata in registrazione")
+    @DisplayName("una password di 6 caratteri è accettata in registrazione")
     void registrationWithMinimumPasswordSucceeds() throws Exception {
         mockMvc.perform(post("/api/cityvoice/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(registerRequest("abcd"))))
+                        .content(objectMapper.writeValueAsString(registerRequest("abcdef"))))
                 .andExpect(status().isOk());
     }
 }

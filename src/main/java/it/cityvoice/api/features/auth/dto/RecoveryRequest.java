@@ -10,6 +10,6 @@ public class RecoveryRequest {
     @NotBlank(message = "campo recovery-key obbligatorio")
     private String recoveryKey;
     @NotBlank(message = "campo nuova password obbligatorio")
-    @Size(min = 6, max = 12, message = "il campo password deve essere min 6 e max 12 caratteri")
+    @Size(min = 6, max = 14, message = "il campo password deve essere min 6 e max 14 caratteri")
     private String newPassword;
 }
