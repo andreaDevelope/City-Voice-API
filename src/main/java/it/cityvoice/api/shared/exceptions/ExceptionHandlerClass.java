@@ -13,6 +13,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -118,6 +119,14 @@ public class ExceptionHandlerClass {
         log.warn("Body della richiesta non leggibile", ex);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("message", "Formato della richiesta non valido"));
+    }
+
+    // 400 - path/query parameter of the wrong type (e.g. a non-UUID id)
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String, String>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        log.warn("Parametro di tipo non valido", ex);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("message", "Parametro non valido"));
     }
 
     // 500 - messaggio fisso, il dettaglio resta nel log

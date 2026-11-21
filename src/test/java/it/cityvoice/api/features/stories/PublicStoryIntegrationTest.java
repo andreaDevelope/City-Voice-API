@@ -354,4 +354,12 @@ class PublicStoryIntegrationTest extends IntegrationTestBase {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Storia non trovata"));
     }
+
+    @Test
+    @DisplayName("un id non valido restituisce 400")
+    void invalidIdReturnsBadRequest() throws Exception {
+        mockMvc.perform(get("/api/cityvoice/public/stories/abc"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Parametro non valido"));
+    }
 }

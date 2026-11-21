@@ -116,6 +116,7 @@ expired token is handled by `JwtAuthenticationEntryPoint` instead.
 |---|---|
 | `ConstraintViolationException` | 400, body maps field to message |
 | `BadRequestException`, `IllegalArgumentException`, `MethodArgumentNotValidException`, `HttpMessageNotReadableException` | 400 |
+| `MethodArgumentTypeMismatchException` (parameter of the wrong type, e.g. a non-UUID id) | 400 "Parametro non valido" |
 | `BadCredentialsException` | 401 |
 | `AccessDeniedException`, `UnauthorizedException` | 403 |
 | `ResourceNotFoundException` | 404 |
