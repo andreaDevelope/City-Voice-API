@@ -6,6 +6,10 @@ import it.cityvoice.api.features.profile.categories.entity.Category;
 import it.cityvoice.api.features.profile.categories.services.CategoryServ;
 import it.cityvoice.api.features.profile.user_badge.repositories.UserBadgeRepo;
 import it.cityvoice.api.features.profile.user_badge.services.UserBadgeService;
+import it.cityvoice.api.features.districts.entity.District;
+import it.cityvoice.api.features.districts.services.DistrictServ;
+import it.cityvoice.api.features.profile.user_rome.dto.NeighborhoodResponse;
+import it.cityvoice.api.features.profile.user_rome.dto.UpdateNeighborhoodRequest;
 import it.cityvoice.api.features.profile.user_rome.dto.UpdateVisualIdentityRequest;
 import it.cityvoice.api.features.profile.user_rome.dto.UserProfileResponse;
 import it.cityvoice.api.features.profile.user_rome.dto.VisualIdentityResponse;
@@ -37,6 +41,7 @@ public class UserRomeServ {
     private final UserBadgeService userBadgeService;
     private final UserBadgeRepo userBadgeRepo;
     private final EntityManager entityManager;
+    private final DistrictServ districtServ;
 
     @Transactional
     public UserRome findByAppUserId(Long id) {
@@ -63,11 +68,12 @@ public class UserRomeServ {
 
     @Transactional(readOnly = true)
     public UserProfileResponse getMyProfile(UserRome userRome) {
+        District neighborhood = userRome.getNeighborhood();
         return new UserProfileResponse(
                 userRome.getAppUser().getUsername(),
                 userRome.getSymbol(),
                 userRome.getColor(),
-                userRome.getNeighborhood(),
+                neighborhood == null ? null : NeighborhoodResponse.from(neighborhood),
                 userRome.getAppUser().getCreatedAt()
         );
     }
@@ -78,6 +84,15 @@ public class UserRomeServ {
         userRome.setColor(request.color());
         UserRome saved = userRepo.save(userRome);
         return new VisualIdentityResponse(saved.getSymbol(), saved.getColor());
+    }
+
+    @Transactional
+    public UserProfileResponse updateNeighborhood(UserRome userRome, @Valid UpdateNeighborhoodRequest request) {
+        // a null districtId clears the neighborhood, so it is never looked up
+        District neighborhood = request.districtId() == null ? null : districtServ.getById(request.districtId());
+        userRome.setNeighborhood(neighborhood);
+        UserRome saved = userRepo.save(userRome);
+        return getMyProfile(saved);
     }
 
     private void trackDailyAccess(UserRome userRome) {

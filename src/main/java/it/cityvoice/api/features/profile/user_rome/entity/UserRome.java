@@ -1,6 +1,7 @@
 package it.cityvoice.api.features.profile.user_rome.entity;
 
 import it.cityvoice.api.features.auth.entity.AppUser;
+import it.cityvoice.api.features.districts.entity.District;
 import it.cityvoice.api.features.profile.user_rome.enums.ProfileColor;
 import it.cityvoice.api.features.profile.user_rome.enums.ProfileSymbol;
 import jakarta.persistence.*;
@@ -27,7 +28,9 @@ import java.time.LocalDate;
         @Enumerated(EnumType.STRING)
         private ProfileColor color;
 
-        private String neighborhood;
+        @ManyToOne(fetch = FetchType.LAZY)
+        @JoinColumn(name = "neighborhood_id")
+        private District neighborhood;
 
         @Column(nullable = false)
         private int activityCounter = 0;

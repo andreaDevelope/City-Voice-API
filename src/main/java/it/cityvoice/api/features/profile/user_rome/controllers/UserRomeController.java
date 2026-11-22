@@ -1,5 +1,6 @@
 package it.cityvoice.api.features.profile.user_rome.controllers;
 
+import it.cityvoice.api.features.profile.user_rome.dto.UpdateNeighborhoodRequest;
 import it.cityvoice.api.features.profile.user_rome.dto.UpdateVisualIdentityRequest;
 import it.cityvoice.api.features.profile.user_rome.dto.UserProfileResponse;
 import it.cityvoice.api.features.profile.user_rome.dto.VisualIdentityResponse;
@@ -34,5 +35,12 @@ public class UserRomeController {
         return ResponseEntity.ok(updated);
     }
 
+    @PutMapping("/neighborhood")
+    public ResponseEntity<UserProfileResponse> updateNeighborhood(
+            @AuthenticationPrincipal UserDetails user,
+            @RequestBody UpdateNeighborhoodRequest request) {
+        UserRome userRome = userRomeServ.findByUsername(user.getUsername());
+        return ResponseEntity.ok(userRomeServ.updateNeighborhood(userRome, request));
+    }
 
 }

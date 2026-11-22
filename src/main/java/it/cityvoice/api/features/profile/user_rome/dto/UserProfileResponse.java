@@ -9,6 +9,6 @@ public record UserProfileResponse(
         String username,
         ProfileSymbol symbol,
         ProfileColor color,
-        String neighborhood,
+        NeighborhoodResponse neighborhood,
         Instant memberSince
 ) {}

@@ -47,8 +47,9 @@ During development `SecurityConfig` lets every request through at filter level (
 | POST | `/auth/recovery` | no | Resets the password using the recovery key                                           |
 | GET | `/auth/me` | yes | Returns the authenticated user                                                       |
 | POST | `/auth/refresh-token` | yes | Refreshes the JWT                                                                    |
-| GET | `/profile/me` | yes | Returns the profile, visual identity and registration date                           |
+| GET | `/profile/me` | yes | Returns the profile, visual identity, registration date and neighborhood             |
 | PUT | `/profile/visual-identity` | yes | Updates symbol and colour                                                            |
+| PUT | `/profile/neighborhood` | yes | Sets or clears (null) the user's neighborhood; unknown id → 404                      |
 | GET | `/badge/progress` | yes | Badge progress for all four categories                                               |
 | GET | `/badge/unlocked` | yes | Badges unlocked by the user, with their featured position                            |
 | PUT | `/badge/featured` | yes | Sets the featured badges (max 3); list order is the position                         |
