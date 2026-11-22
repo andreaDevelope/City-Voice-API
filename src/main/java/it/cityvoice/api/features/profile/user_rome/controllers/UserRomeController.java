@@ -21,14 +21,8 @@ public class UserRomeController {
 
     @GetMapping("/me")
     public ResponseEntity<UserProfileResponse> getMyProfile(@AuthenticationPrincipal UserDetails user) {
-                UserRome userRome = userRomeServ.findByUsername(user.getUsername());
-                UserProfileResponse response = new UserProfileResponse(
-                                user.getUsername(),
-                                userRome.getSymbol(),
-                                userRome.getColor(),
-                                userRome.getNeighborhood()
-                                );
-                return ResponseEntity.ok(response);
+        UserRome userRome = userRomeServ.findByUsername(user.getUsername());
+        return ResponseEntity.ok(userRomeServ.getMyProfile(userRome));
     }
 
     @PutMapping("/visual-identity")

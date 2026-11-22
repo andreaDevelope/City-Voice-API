@@ -7,6 +7,7 @@ import it.cityvoice.api.features.profile.categories.services.CategoryServ;
 import it.cityvoice.api.features.profile.user_badge.repositories.UserBadgeRepo;
 import it.cityvoice.api.features.profile.user_badge.services.UserBadgeService;
 import it.cityvoice.api.features.profile.user_rome.dto.UpdateVisualIdentityRequest;
+import it.cityvoice.api.features.profile.user_rome.dto.UserProfileResponse;
 import it.cityvoice.api.features.profile.user_rome.dto.VisualIdentityResponse;
 import it.cityvoice.api.features.profile.user_rome.entity.UserRome;
 import it.cityvoice.api.features.profile.user_rome.repositories.UserRomeRepo;
@@ -55,6 +56,17 @@ public class UserRomeServ {
 
     public UserRome save(UserRome userRome) {
         return userRepo.save(userRome);
+    }
+
+    @Transactional(readOnly = true)
+    public UserProfileResponse getMyProfile(UserRome userRome) {
+        return new UserProfileResponse(
+                userRome.getAppUser().getUsername(),
+                userRome.getSymbol(),
+                userRome.getColor(),
+                userRome.getNeighborhood(),
+                userRome.getAppUser().getCreatedAt()
+        );
     }
 
     @Transactional

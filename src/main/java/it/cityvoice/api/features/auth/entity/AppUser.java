@@ -3,7 +3,9 @@ package it.cityvoice.api.features.auth.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import it.cityvoice.api.features.auth.enums.Role;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.Instant;
 import java.util.Set;
 
 @Entity
@@ -32,5 +34,9 @@ public class AppUser {
     )
     @Enumerated(EnumType.STRING)
     private Set<Role> roles;
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private Instant createdAt;
 
 }

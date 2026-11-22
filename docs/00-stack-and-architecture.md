@@ -47,7 +47,7 @@ During development `SecurityConfig` lets every request through at filter level (
 | POST | `/auth/recovery` | no | Resets the password using the recovery key                                           |
 | GET | `/auth/me` | yes | Returns the authenticated user                                                       |
 | POST | `/auth/refresh-token` | yes | Refreshes the JWT                                                                    |
-| GET | `/profile/me` | yes | Returns the profile and visual identity                                              |
+| GET | `/profile/me` | yes | Returns the profile, visual identity and registration date                           |
 | PUT | `/profile/visual-identity` | yes | Updates symbol and colour                                                            |
 | GET | `/badge/progress` | yes | Badge progress for all four categories                                               |
 | GET | `/badge/unlocked` | yes | Badges unlocked by the user, with their featured position                            |
