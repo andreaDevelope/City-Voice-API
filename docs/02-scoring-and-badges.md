@@ -68,6 +68,10 @@ Annotating `@Retryable` directly on a `@Transactional` method, or making the wra
 
 There are three attempts, with no wait between them, and only for `OptimisticLockingFailureException` — any other error surfaces immediately. Once the attempts are exhausted, the exception reaches the exception handler and becomes a 409.
 
+### Why daily access tracking takes a lock instead
+
+The daily access tracking takes a pessimistic row lock only on the first access of the day and re-checks the date after acquiring it, because parallel requests from the same client on that first access would otherwise all read `lastActiveDate` as "not today", double-count the continuity streak and try to unlock the same badge twice. Every later request of the day returns before taking any lock, so the cost falls only on the one access per user per day that actually needs it.
+
 ## Schema and constraints
 
 ### Reaction uniqueness

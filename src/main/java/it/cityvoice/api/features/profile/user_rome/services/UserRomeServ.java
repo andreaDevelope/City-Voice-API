@@ -11,6 +11,8 @@ import it.cityvoice.api.features.profile.user_rome.dto.UserProfileResponse;
 import it.cityvoice.api.features.profile.user_rome.dto.VisualIdentityResponse;
 import it.cityvoice.api.features.profile.user_rome.entity.UserRome;
 import it.cityvoice.api.features.profile.user_rome.repositories.UserRomeRepo;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,7 @@ public class UserRomeServ {
     private final CategoryServ categoryServ;
     private final UserBadgeService userBadgeService;
     private final UserBadgeRepo userBadgeRepo;
+    private final EntityManager entityManager;
 
     @Transactional
     public UserRome findByAppUserId(Long id) {
@@ -82,6 +85,17 @@ public class UserRomeServ {
         if (today.equals(userRome.getLastActiveDate())) {
             return;
         }
+
+        // Parallel requests on the first access of the day would otherwise all read
+        // lastActiveDate as "not today", all increment the counter and all unlock the
+        // same badge. The lock is taken only once per user per day: every later request
+        // of the day returns at the fast path above, before reaching this line.
+        entityManager.refresh(userRome, LockModeType.PESSIMISTIC_WRITE);
+        if (today.equals(userRome.getLastActiveDate())) {
+            // another request already tracked today's access while this one waited for the lock
+            return;
+        }
+
         LocalDate yesterday = today.minusDays(1);
         if (yesterday.equals(userRome.getLastActiveDate())) {
             userRome.setContinuityCounter(Math.min(userRome.getContinuityCounter() + 1, CONTINUITY_CAP));
