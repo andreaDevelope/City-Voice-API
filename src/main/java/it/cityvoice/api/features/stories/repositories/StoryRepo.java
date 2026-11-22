@@ -34,6 +34,10 @@ public interface StoryRepo extends JpaRepository<Story, UUID>, JpaSpecificationE
     @EntityGraph(attributePaths = {"userRome", "userRome.appUser", "district"})
     Optional<Story> findByIdAndStatus(UUID id, StoryStatus status);
 
+    // The requester's own content in every status; the author is the requester, so only district is fetched
+    @EntityGraph(attributePaths = {"district"})
+    Page<Story> findByUserRome(UserRome userRome, Pageable pageable);
+
     // Published reports per category; categories with no reports are absent
     @Query("SELECT s.category AS category, COUNT(s) AS count FROM Story s " +
             "WHERE s.status = :status AND s.type = :type AND s.category IS NOT NULL " +
@@ -42,8 +46,19 @@ public interface StoryRepo extends JpaRepository<Story, UUID>, JpaSpecificationE
 
     long countByStatusAndType(StoryStatus status, StoryType type);
 
+    // The requester's content per status; statuses with no content are absent
+    @Query("SELECT s.status AS status, COUNT(s) AS count FROM Story s " +
+            "WHERE s.userRome = :userRome " +
+            "GROUP BY s.status")
+    List<StatusCountProjection> countByStatusOfUser(@Param("userRome") UserRome userRome);
+
     interface CategoryCountProjection {
         ReportCategory getCategory();
+        long getCount();
+    }
+
+    interface StatusCountProjection {
+        StoryStatus getStatus();
         long getCount();
     }
 }

@@ -55,6 +55,8 @@ During development `SecurityConfig` lets every request through at filter level (
 | PUT | `/badge/featured` | yes | Sets the featured badges (max 3); list order is the position                         |
 | POST | `/stories` | yes | Submits a story (`STORY`) or a report (`REPORT`), returns updated badge progress     |
 | DELETE | `/stories/{storyId}` | yes | Deletes one of the author's stories, returns updated badge progress                  |
+| GET | `/stories/mine` | yes | The user's own stories and reports in every status, newest first; paginated |
+| GET | `/stories/mine/summary` | yes | Counts of the user's content by status (in review includes changes requested) and the number of distinct municipi |
 | POST | `/comments` | yes | Posts a comment or a reply                                                           |
 | DELETE | `/comments/{commentId}` | yes | Deletes one of the author's comments and its replies, returns updated badge progress |
 | POST | `/reactions` | yes | Adds, switches or removes a reaction (toggle)                                        |

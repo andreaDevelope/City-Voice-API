@@ -4,8 +4,12 @@ import it.cityvoice.api.features.profile.badges.dto.CategoryProgressResponse;
 import it.cityvoice.api.features.profile.user_rome.entity.UserRome;
 import it.cityvoice.api.features.profile.user_rome.services.UserRomeServ;
 import it.cityvoice.api.features.stories.dto.CreateStoryRequest;
+import it.cityvoice.api.features.stories.dto.MyStoriesSummaryResponse;
+import it.cityvoice.api.features.stories.dto.MyStoryResponse;
 import it.cityvoice.api.features.stories.dto.StoryResponse;
+import it.cityvoice.api.features.stories.services.StoryQueryServ;
 import it.cityvoice.api.features.stories.services.StoryServ;
+import it.cityvoice.api.shared.dto.PageResponse;
 import it.cityvoice.api.shared.retry.OptimisticRetryServ;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,6 +29,7 @@ import java.util.UUID;
 public class StoryController {
 
     private final StoryServ storyServ;
+    private final StoryQueryServ storyQueryServ;
     private final UserRomeServ userRomeServ;
     private final OptimisticRetryServ optimisticRetryServ;
 
@@ -43,5 +48,20 @@ public class StoryController {
             @PathVariable UUID storyId) {
         UserRome userRome = userRomeServ.findByUsername(user.getUsername());
         return ResponseEntity.ok(optimisticRetryServ.withRetry(() -> storyServ.deleteStory(userRome, storyId)));
+    }
+
+    @GetMapping("/mine")
+    public ResponseEntity<PageResponse<MyStoryResponse>> getMyStories(
+            @AuthenticationPrincipal UserDetails user,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size) {
+        UserRome userRome = userRomeServ.findByUsername(user.getUsername());
+        return ResponseEntity.ok(storyQueryServ.getMyStories(userRome, page, size));
+    }
+
+    @GetMapping("/mine/summary")
+    public ResponseEntity<MyStoriesSummaryResponse> getMySummary(@AuthenticationPrincipal UserDetails user) {
+        UserRome userRome = userRomeServ.findByUsername(user.getUsername());
+        return ResponseEntity.ok(storyQueryServ.getMySummary(userRome));
     }
 }

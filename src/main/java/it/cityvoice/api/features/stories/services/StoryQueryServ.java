@@ -5,11 +5,14 @@ import it.cityvoice.api.features.comments.repositories.CommentRepo.CommentCountP
 import it.cityvoice.api.features.districts.enums.Municipio;
 import it.cityvoice.api.features.profile.user_badge.entity.UserBadge;
 import it.cityvoice.api.features.profile.user_badge.repositories.UserBadgeRepo;
+import it.cityvoice.api.features.profile.user_rome.entity.UserRome;
 import it.cityvoice.api.features.reactions.enums.ReactionType;
 import it.cityvoice.api.features.reactions.repositories.ReactionRepo;
 import it.cityvoice.api.features.reactions.repositories.ReactionRepo.ReactionCountProjection;
 import it.cityvoice.api.features.stories.dto.CategoryCountResponse;
 import it.cityvoice.api.features.stories.dto.FeaturedBadgeResponse;
+import it.cityvoice.api.features.stories.dto.MyStoriesSummaryResponse;
+import it.cityvoice.api.features.stories.dto.MyStoryResponse;
 import it.cityvoice.api.features.stories.dto.StoryAuthorResponse;
 import it.cityvoice.api.features.stories.dto.StoryCardResponse;
 import it.cityvoice.api.features.stories.dto.StoryDetailResponse;
@@ -41,6 +44,8 @@ public class StoryQueryServ {
 
     private static final int DEFAULT_MIN_SIZE = 1;
     private static final int MAX_SIZE = 50;
+    // Same default as the public feed, whose default lives in its controller
+    private static final int DEFAULT_SIZE = 20;
 
     private final StoryRepo storyRepo;
     private final ReactionRepo reactionRepo;
@@ -97,6 +102,40 @@ public class StoryQueryServ {
         return Arrays.stream(ReportCategory.values())
                 .map(category -> new CategoryCountResponse(category, counts.getOrDefault(category, 0L)))
                 .toList();
+    }
+
+    public PageResponse<MyStoryResponse> getMyStories(UserRome userRome, Integer page, Integer size) {
+        int resolvedPage = page == null ? 0 : Math.max(page, 0);
+        int resolvedSize = size == null ? DEFAULT_SIZE : Math.min(Math.max(size, DEFAULT_MIN_SIZE), MAX_SIZE);
+
+        Pageable pageable = PageRequest.of(resolvedPage, resolvedSize, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Story> result = storyRepo.findByUserRome(userRome, pageable);
+
+        List<Story> stories = result.getContent();
+        if (stories.isEmpty()) {
+            return new PageResponse<>(List.of(), resolvedPage, resolvedSize, result.hasNext());
+        }
+
+        Aggregates aggregates = loadAggregates(stories);
+        List<MyStoryResponse> items = stories.stream()
+                .map(story -> MyStoryResponse.from(story,
+                        aggregates.likes(story), aggregates.dislikes(story), aggregates.comments(story)))
+                .toList();
+
+        return new PageResponse<>(items, resolvedPage, resolvedSize, result.hasNext());
+    }
+
+    public MyStoriesSummaryResponse getMySummary(UserRome userRome) {
+        Map<StoryStatus, Long> counts = storyRepo.countByStatusOfUser(userRome).stream()
+                .collect(Collectors.toMap(StoryRepo.StatusCountProjection::getStatus, StoryRepo.StatusCountProjection::getCount));
+
+        long published = counts.getOrDefault(StoryStatus.PUBLISHED, 0L);
+        // Changes requested is still waiting for a new review, so it counts as in review
+        long inReview = counts.getOrDefault(StoryStatus.IN_REVIEW, 0L) + counts.getOrDefault(StoryStatus.CHANGES_REQUESTED, 0L);
+        long blocked = counts.getOrDefault(StoryStatus.BLOCKED, 0L);
+        long total = counts.values().stream().mapToLong(Long::longValue).sum();
+
+        return new MyStoriesSummaryResponse(total, published, inReview, blocked, userRome.getNeighborhoodCounter());
     }
 
     private StoryCardResponse toCard(Story story, Aggregates aggregates) {
